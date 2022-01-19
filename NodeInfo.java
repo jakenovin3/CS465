@@ -1,5 +1,5 @@
 public class NodeInfo {
-    private String logicalName;
-    private String ip;
+    private String logicalName = null;
+    private String ip = null;
     private int portNum;
 }
