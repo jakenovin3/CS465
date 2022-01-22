@@ -2,10 +2,10 @@ import java.util.ArrayList;
 import java.net.*;
 
 public class NodeServer {
-    public static void main() {
-        // Use array to store info for each client node
-        ArrayList<NodeInfo> connectivityInfo;
+    // Use array to store info for each client node
+    public static ArrayList<NodeInfo> participants = new ArrayList<NodeInfo>();
 
+    public static void main() {
         // scanner will be used to parse input
         // multithreaded loop to distribute threads to clients
         // NodeClient should use two threads, one for listening and the other for being able to send a message to the server
@@ -17,19 +17,7 @@ public class NodeServer {
 
         //
 
-        // server waits for message
-            // Server receives a message, check type, use scanner:
-                // NOTE
-                    // cast content to String
-                    // send NOTE to all clients using NodeInfo
-                // JOIN
-                    // cast content to NodeInfo
-                // LEAVE
-                    // cast content to NodeInfo
-                // SHUTDOWN
-                    // cast content to NodeInfo
-                // SHUTDOWNALL
-                    // cast content to NodeInfo
+
 
     }
 }

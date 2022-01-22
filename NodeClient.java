@@ -1,6 +1,9 @@
 import org.w3c.dom.Node;
 
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.ClientInfoStatus;
 import java.util.Properties;
 import java.util.Scanner;
@@ -9,7 +12,7 @@ import java.util.logging.Logger;
 
 public class NodeClient {
     private Message message;
-    private NodeInfo clientInfo;
+    private static NodeInfo clientInfo;
     // each client needs to listen and have a server socket
     // the client should use two threads
 
@@ -33,6 +36,7 @@ public class NodeClient {
         System.out.println("Please enter name: ");
         Scanner inputScanner = new Scanner(System.in);
         clientName = inputScanner.nextLine();
+
         while( clientName.length() < 1 ) {
             System.out.println("Reenter name: ");
             clientName = inputScanner.nextLine();
@@ -78,7 +82,8 @@ public class NodeClient {
     public static void main(String[] args) throws IOException {
 
         String propertiesFile = null;
-
+        ObjectOutputStream toServer = null;
+        ObjectInputStream fromServer = null;
         try {
             propertiesFile = args[0];
         } catch (ArrayIndexOutOfBoundsException ex) {
@@ -86,6 +91,51 @@ public class NodeClient {
         }
 
         (new NodeClient(propertiesFile)).run();
+        Sender clientSender = new Sender(clientInfo);
+        Receiver clientReceiver = new Receiver(clientInfo);
+        // wait for join message
+        String input = "";
+        String serverOutput = "";
+//        while( input != "join" ) {
+//
+//            input = System.console().readLine( "Enter message: ");
+//        }
+
+        Boolean running = true;
+        // start loop - wait for message from Client
+        while( running ) {
+
+            // check for server messages
+            try {
+                serverOutput = fromServer.readUTF();
+                System.out.println(serverOutput);
+            }
+            catch ( IOException ex ) {
+            }
+
+            input = System.console().readLine( "Enter message: " );
+
+            // Server receives a message, check type, use scanner:
+            switch ( input ) {
+                case "join": // JOIN
+                    toServer = new ObjectOutputStream( clientSender.getSocket().getOutputStream() );
+                    fromServer = new ObjectInputStream( clientSender.getSocket().getInputStream() );
+                    break;
+                case "leave": // LEAVE
+                    fromServer.close();
+                    toServer.close();
+                    break;
+                // NOTE
+                // cast content to String
+                // send NOTE to all clients using NodeInfo
+                case "shutdown": // SHUTDOWN
+                // cast content to NodeInfo
+                default: // Temp Note handling
+                    toServer.writeBytes(input);
+                    break;
+
+            }
+        }
     }
 
 }

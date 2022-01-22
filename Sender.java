@@ -21,5 +21,8 @@ public class Sender {
         }
     }
 
+    public Socket getSocket() {
+        return serverConnection;
+    }
     // start method? How do we run this in parallel, sender and receiver
 }
