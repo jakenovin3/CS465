@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class NodeClient implements MessageTypes{
+public class NodeClient implements MessageTypes {
     private static int portNum = 0;
     private static String name, ip = "";
     static Properties properties = null;
@@ -15,33 +15,38 @@ public class NodeClient implements MessageTypes{
     public void start() {
         String input;
         BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
-        String host = "localhost";
 
         try {
+            // Collects new user's name
             System.out.println( "Provide a name: " );
             name = reader.readLine();
 
             System.out.println( "Welcome in! Waiting on instructions..." );
 
-            // Loop that keeps reading the input string
+            // Loop that keeps reading the client input string
             while( true ) {
                 input = reader.readLine();
                 input = input.toLowerCase();
 
-                Socket socket = new Socket( ip, 23657 );
-                ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
+                // Opens up connections
+                Socket socket = new Socket( ip, portNum );
+                node = new NodeInfo( name, ip, portNum );
+                Receiver receiver = new Receiver( node );
+                Sender sender = new Sender( node );
 
+                receiver.start();
+                sender.start();
+
+                // we are blocking using the readObject method. We need to create a thread by implementing runnable
+                //or inheriting from thread. Create an instance of the class and call .start method for threading. Create one class that listens to the server and one class that listens to user input.
                 try{
-                    String displayMessage = (String) fromServer.readObject();
+                   String displayMessage = (String) receiver.fromServer.readObject();
                 } catch( ClassNotFoundException CNF) {
 
                 }
 
+                // When the user sends a JOIN
                 if( input.equals( "join" ) ) {
-
-                    node = new NodeInfo( name, ip, portNum );
-
                     // Connect to the other participants
                     System.out.println( "Connecting..." );
 
@@ -49,50 +54,47 @@ public class NodeClient implements MessageTypes{
                     Message joinMsg = new Message( MessageTypes.MessageEnum.JOIN , node );
 
                     // Sending the join message to
-                    toServer.writeObject( joinMsg );
+                    sender.toServer.writeObject( joinMsg );
 
                     socket.close();
-                    toServer.close();
-                    fromServer.close();
+                    sender.toServer.close();
+                    receiver.fromServer.close();
                 }
+                // When the user sends a LEAVE
                 else if( input.equals( "leave" ) ) {
-                    node = new NodeInfo( name, ip, portNum );
-
                     // Creating the leave message
                     Message leaveMsg = new Message( MessageTypes.MessageEnum.LEAVE , node );
 
                     // Sending the join message to
-                    toServer.writeObject( leaveMsg );
+                    sender.toServer.writeObject( leaveMsg );
 
                     socket.close();
-                    toServer.close();
-                    fromServer.close();
+                    sender.toServer.close();
+                    receiver.fromServer.close();
                 }
+                // When the user sends a SHUTDOWN
                 else if( input.equals( "shutdown" ) ) {
-                    node = new NodeInfo( name, ip, portNum );
-
                     // Creating the SHUTDOWN message
                     Message shutdownMsg = new Message( MessageTypes.MessageEnum.SHUTDOWN , node );
 
                     // Sending the join message to
-                    toServer.writeObject( shutdownMsg );
+                    sender.toServer.writeObject( shutdownMsg );
 
                     socket.close();
-                    toServer.close();
-                    fromServer.close();
+                    sender.toServer.close();
+                    receiver.fromServer.close();
                 }
+                // When the user sends a NOTE
                 else {
-                    node = new NodeInfo( name, ip, portNum );
-
                     // Creating the NOTE message
                     Message noteMsg = new Message( MessageTypes.MessageEnum.NOTE , node );
 
                     // Sending the join message to
-                    toServer.writeObject( noteMsg );
+                    sender.toServer.writeObject( noteMsg );
 
                     socket.close();
-                    toServer.close();
-                    fromServer.close();
+                    sender.toServer.close();
+                    receiver.fromServer.close();
                 }
             }
         }
@@ -102,7 +104,7 @@ public class NodeClient implements MessageTypes{
     }
 
     public static void main(String[] args) throws IOException {
-        // open properties
+        // Attempts to open the properties file
         try
         {
             properties = new utils.PropertyHandler(propertiesFile);
@@ -113,7 +115,7 @@ public class NodeClient implements MessageTypes{
             System.exit(1);
         }
 
-        // get server IP
+        // Gets server IP from properties file
         try
         {
             ip = properties.getProperty("SERVER_IP");
@@ -124,7 +126,7 @@ public class NodeClient implements MessageTypes{
             System.exit(1);
         }
 
-        // Get port number
+        // Gets server PORT from properties file
         try
         {
             portNum = Integer.parseInt( properties.getProperty("SERVER_PORT") );
@@ -135,8 +137,8 @@ public class NodeClient implements MessageTypes{
             System.exit(1);
         }
 
+        // Creation of client object and starting it up
         NodeClient client = new NodeClient();
         client.start();
     }
 }
-

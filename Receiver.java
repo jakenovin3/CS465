@@ -4,7 +4,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Receiver {
+public class Receiver extends Thread {
     private Socket serverConnection = null;
     public ObjectInputStream fromServer = null;
 

@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Sender {
+public class Sender extends Thread {
     private Socket serverConnection = null;
     public ObjectOutputStream toServer = null;
 

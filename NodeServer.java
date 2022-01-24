@@ -16,6 +16,7 @@ public class NodeServer {
     String propertiesFile = "C:\\Users\\Jake\\Documents\\Classes\\Year 4\\CS465\\Git_Prog_1\\Server.properties";
 
     public void start() {
+        // Attempts to open the properties file
         try
         {
             properties = new utils.PropertyHandler(propertiesFile);
@@ -26,7 +27,7 @@ public class NodeServer {
             System.exit(1);
         }
 
-        // get server IP
+        // Gets server IP from properties file
         try
         {
             ip = properties.getProperty("SERVER_IP");
@@ -37,7 +38,7 @@ public class NodeServer {
             System.exit(1);
         }
 
-        // Get port number
+        // Gets server PORT from properties file
         try
         {
             portNum = Integer.parseInt( properties.getProperty("SERVER_PORT") );
@@ -51,9 +52,11 @@ public class NodeServer {
         while(true)
         {
             try {
+                // Opens up a socket to connect to client
                 ServerSocket serverSocket = new ServerSocket( portNum );
                 Socket receiverSocket = serverSocket.accept();
 
+                // Creates object streams to send NodeInfo over
                 ObjectInputStream fromClient = new ObjectInputStream( receiverSocket.getInputStream() );
                 ObjectOutputStream toClient = new ObjectOutputStream( receiverSocket.getOutputStream() );
 
@@ -65,10 +68,12 @@ public class NodeServer {
 
                 // When the message received is a JOIN
                 if( received.getMessageType() == MessageTypes.MessageEnum.JOIN ) {
+                    // Detects if user is already an active participant
                     if( activeParticipants.contains( (NodeInfo) received.getMessageContent() )) {
                         System.out.println( userName + " is already in!");
                     }
                     else{
+                        // Adds user to active participants if they are not already
                         if( inactiveParticipants.contains( (NodeInfo) received.getMessageContent() )) {
                             inactiveParticipants.remove( (NodeInfo) received.getMessageContent() );
                         }
@@ -80,11 +85,13 @@ public class NodeServer {
 
                 // When the message received is a LEAVE
                 else if( received.getMessageType() == MessageTypes.MessageEnum.LEAVE ) {
+                    // If a user is still active, makes them inactive and removes from chat
                     if( activeParticipants.contains( (NodeInfo) received.getMessageContent() )) {
                         activeParticipants.remove( (NodeInfo) received.getMessageContent() );
                         inactiveParticipants.add( (NodeInfo) received.getMessageContent() );
                         System.out.println( userName + " has been removed from the chat!");
                     }
+                    // Detects if user is already an inactive participant
                     else if( inactiveParticipants.contains( (NodeInfo) received.getMessageContent() ) ){
                         System.out.println( userName + " has already left the chat!");
                     }
@@ -105,6 +112,7 @@ public class NodeServer {
                         }
                         System.out.println( userName + " has been shutdown!");
 
+                        // Closing connections
                         toClient.close();
                         fromClient.close();
                     }
@@ -114,18 +122,20 @@ public class NodeServer {
                     String note = (String) received.getMessageContent();
                     Socket socket = null;
                     ObjectOutputStream messageStream = null;
+                    // Loops through active participants and sends a message to each one
                     for( NodeInfo user : activeParticipants ) {
 
                         if( user.getName() != userName ) {
                             socket = new Socket( user.getIP(), user.getPort() );
                             messageStream = new ObjectOutputStream(socket.getOutputStream());
 
-                            // Creating message to be sent to other users and sending it over the stream
+                            // Creating message to be sent to other users and writing it to the stream
                             Message sentMessage = new Message( MessageTypes.MessageEnum.NOTE , note );
                             messageStream.writeObject( sentMessage );
                         }
                     }
 
+                    // Closing connections
                     messageStream.close();
                     socket.close();
                 }
@@ -138,6 +148,8 @@ public class NodeServer {
     }
 
     public static void main(String[] args) {
+
+        // Creates server object and starts it up
         NodeServer server = new NodeServer();
         server.start();
     }
