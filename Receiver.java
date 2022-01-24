@@ -4,13 +4,14 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Receiver {
+public class Receiver extends Thread {
     private Socket serverConnection = null;
     public ObjectInputStream fromServer = null;
 
     public Receiver(NodeInfo clientInfo) {
         try {
             serverConnection = new Socket(clientInfo.getIP(), clientInfo.getPort());
+            // create an instance of the class - think of it like it is the thread thread, use start
             fromServer = new ObjectInputStream(serverConnection.getInputStream());
 
         }

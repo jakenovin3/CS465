@@ -5,11 +5,11 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
-public class NodeClient implements MessageTypes{
+public class NodeClient implements MessageTypes {
     private static int portNum = 0;
     private static String name, ip = "";
     static Properties properties = null;
-    static String propertiesFile = "C:\\Users\\Jake\\Documents\\Classes\\Year 4\\CS465\\Git_Prog_1\\Server.properties";
+    static String propertiesFile = "/home/vrm/Documents/school/CS465/CS465/Server.properties";
     NodeInfo node;
 
     public void start() {
@@ -32,11 +32,13 @@ public class NodeClient implements MessageTypes{
                 ObjectOutputStream toServer = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream fromServer = new ObjectInputStream(socket.getInputStream());
 
-                try{
-                    String displayMessage = (String) fromServer.readObject();
-                } catch( ClassNotFoundException CNF) {
-
-                }
+                // we are blocking using the readObject method. We need to create a thread by implementing runnable
+                // or inheriting from thread. Create an instance of the class and call .start method for threading. Create one class that listens to the server and one class that listens to user input.
+//                try{
+//                    String displayMessage = (String) fromServer.readObject();
+//                } catch( ClassNotFoundException CNF) {
+//
+//                }
 
                 if( input.equals( "join" ) ) {
 
