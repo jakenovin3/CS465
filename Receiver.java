@@ -1,19 +1,27 @@
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.net.Socket;
+import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Receiver extends Thread {
-    private Socket serverConnection = null;
-    public ObjectInputStream fromServer = null;
+     // use a ServerSocket, the ports between the server and client serversocket must be distinct
+    ObjectInputStream fromServer = null;
+
+    public void run() {
+        try{
+            String displayMessage = (String) this.fromServer.readObject();
+            System.out.println( "Message from server: " + displayMessage );
+        } catch( ClassNotFoundException CNF) {}
+        catch( IOException IOE ){}
+    }
 
     public Receiver(NodeInfo clientInfo) {
         try {
-            serverConnection = new Socket(clientInfo.getIP(), clientInfo.getPort());
-            // create an instance of the class - think of it like it is the thread thread, use start
+            ServerSocket receivingServerSocket = new ServerSocket(clientInfo.getPort());
+            Socket serverConnection = receivingServerSocket.accept();
             fromServer = new ObjectInputStream(serverConnection.getInputStream());
-
         }
         catch(IOException ex)
         {
@@ -21,10 +29,4 @@ public class Receiver extends Thread {
             System.exit(1);
         }
     }
-
-    public Socket getSocket() {
-        return serverConnection;
-    }
-    // start method? How do we run this in parallel, sender and receiver
-
 }

@@ -8,7 +8,6 @@ import java.net.*;
 public class NodeServer {
     // Use array to store info for each client node
     public static ArrayList<NodeInfo> activeParticipants = new ArrayList<NodeInfo>();
-    public static ArrayList<NodeInfo> inactiveParticipants = new ArrayList<NodeInfo>();
 
     int portNum = 0;
     String ip = "";
@@ -49,11 +48,12 @@ public class NodeServer {
             System.exit(1);
         }
 
-        while(true)
+        while(true) //
         {
             try {
+                Boolean clientAdded = false;
                 // Opens up a socket to connect to client
-                ServerSocket serverSocket = new ServerSocket( portNum );
+                ServerSocket serverSocket = new ServerSocket( 5555 );
                 Socket receiverSocket = serverSocket.accept();
 
                 // Creates object streams to send NodeInfo over
@@ -69,53 +69,29 @@ public class NodeServer {
                 // When the message received is a JOIN
                 if( received.getMessageType() == MessageTypes.MessageEnum.JOIN ) {
                     // Detects if user is already an active participant
-                    if( activeParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                        System.out.println( userName + " is already in!");
-                    }
-                    else{
-                        // Adds user to active participants if they are not already
-                        if( inactiveParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                            inactiveParticipants.remove( (NodeInfo) received.getMessageContent() );
+                    for( NodeInfo participant : activeParticipants ) {
+                        if (participant.equals(received.getMessageContent())) {
+                            System.out.println(userName + " is already in!");
+                            clientAdded = true;
                         }
-
-                        activeParticipants.add( (NodeInfo) received.getMessageContent() );
-                        System.out.println( userName + " has joined the chat!");
+                    }
+                    if( !clientAdded ) {
+                        // Adds user to active participants if they are not already
+                        activeParticipants.add((NodeInfo) received.getMessageContent());
+                        System.out.println(userName + " has joined the chat!");
                     }
                 }
 
                 // When the message received is a LEAVE
                 else if( received.getMessageType() == MessageTypes.MessageEnum.LEAVE ) {
                     // If a user is still active, makes them inactive and removes from chat
-                    if( activeParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                        activeParticipants.remove( (NodeInfo) received.getMessageContent() );
-                        inactiveParticipants.add( (NodeInfo) received.getMessageContent() );
-                        System.out.println( userName + " has been removed from the chat!");
-                    }
-                    // Detects if user is already an inactive participant
-                    else if( inactiveParticipants.contains( (NodeInfo) received.getMessageContent() ) ){
-                        System.out.println( userName + " has already left the chat!");
-                    }
-                }
-                // When the message received is a SHUTDOWN
-                else if( received.getMessageType() == MessageTypes.MessageEnum.SHUTDOWN ) {
-                    if( !activeParticipants.contains( (NodeInfo) received.getMessageContent() ) &&
-                            !inactiveParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                        System.out.println( userName + " is not in the system!");
-                    }
-                    else{
-                        if (activeParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                            activeParticipants.remove( (NodeInfo) received.getMessageContent() );
+                    for( NodeInfo participant : activeParticipants ) {
+                        if( participant.equals(received.getMessageContent() )) {
+                            activeParticipants.remove(participant);
+                            System.out.println(userName + " has been removed from the chat!");
                         }
-
-                        if (inactiveParticipants.contains( (NodeInfo) received.getMessageContent() )) {
-                            inactiveParticipants.remove( (NodeInfo) received.getMessageContent() );
-                        }
-                        System.out.println( userName + " has been shutdown!");
-
-                        // Closing connections
-                        toClient.close();
-                        fromClient.close();
                     }
+
                 }
                 // When the message received is a NOTE
                 else {

@@ -9,11 +9,12 @@ public class NodeClient implements MessageTypes {
     private static int portNum = 0;
     private static String name, ip = "";
     static Properties properties = null;
-    static String propertiesFile = "C:\\Users\\Jake\\Documents\\Classes\\Year 4\\CS465\\Git_Prog_1\\Server.properties";
+    static String propertiesFile = "/home/vrm/Documents/school/CS465/CS465/Server.properties";
     NodeInfo node;
 
     public void start() {
-        String input;
+        // client should keep track of status on server
+        Boolean joined = false;
         BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 
         try {
@@ -22,81 +23,18 @@ public class NodeClient implements MessageTypes {
             name = reader.readLine();
 
             System.out.println( "Welcome in! Waiting on instructions..." );
+            // Opens up connections
+//            Socket socket = new Socket( ip, portNum );
+            node = new NodeInfo( name, ip, portNum );
+            Receiver receiver = new Receiver( node );
+            Sender sender = new Sender( node );
+
+            receiver.start();
+            sender.start();
 
             // Loop that keeps reading the client input string
-            while( true ) {
-                input = reader.readLine();
-                input = input.toLowerCase();
+            // change the message types to uppercase
 
-                // Opens up connections
-                Socket socket = new Socket( ip, portNum );
-                node = new NodeInfo( name, ip, portNum );
-                Receiver receiver = new Receiver( node );
-                Sender sender = new Sender( node );
-
-                receiver.start();
-                sender.start();
-
-                // we are blocking using the readObject method. We need to create a thread by implementing runnable
-                //or inheriting from thread. Create an instance of the class and call .start method for threading. Create one class that listens to the server and one class that listens to user input.
-                try{
-                   String displayMessage = (String) receiver.fromServer.readObject();
-                } catch( ClassNotFoundException CNF) {
-
-                }
-
-                // When the user sends a JOIN
-                if( input.equals( "join" ) ) {
-                    // Connect to the other participants
-                    System.out.println( "Connecting..." );
-
-                    // Creating the join message
-                    Message joinMsg = new Message( MessageTypes.MessageEnum.JOIN , node );
-
-                    // Sending the join message to
-                    sender.toServer.writeObject( joinMsg );
-
-                    socket.close();
-                    sender.toServer.close();
-                    receiver.fromServer.close();
-                }
-                // When the user sends a LEAVE
-                else if( input.equals( "leave" ) ) {
-                    // Creating the leave message
-                    Message leaveMsg = new Message( MessageTypes.MessageEnum.LEAVE , node );
-
-                    // Sending the join message to
-                    sender.toServer.writeObject( leaveMsg );
-
-                    socket.close();
-                    sender.toServer.close();
-                    receiver.fromServer.close();
-                }
-                // When the user sends a SHUTDOWN
-                else if( input.equals( "shutdown" ) ) {
-                    // Creating the SHUTDOWN message
-                    Message shutdownMsg = new Message( MessageTypes.MessageEnum.SHUTDOWN , node );
-
-                    // Sending the join message to
-                    sender.toServer.writeObject( shutdownMsg );
-
-                    socket.close();
-                    sender.toServer.close();
-                    receiver.fromServer.close();
-                }
-                // When the user sends a NOTE
-                else {
-                    // Creating the NOTE message
-                    Message noteMsg = new Message( MessageTypes.MessageEnum.NOTE , node );
-
-                    // Sending the join message to
-                    sender.toServer.writeObject( noteMsg );
-
-                    socket.close();
-                    sender.toServer.close();
-                    receiver.fromServer.close();
-                }
-            }
         }
         catch( IOException exception ) {
             System.out.println( "Error at end of infinite loop" );
