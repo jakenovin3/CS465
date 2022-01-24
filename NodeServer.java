@@ -13,7 +13,7 @@ public class NodeServer {
     int portNum = 0;
     String ip = "";
     Properties properties = null;
-    String propertiesFile = "C:\\Users\\Jake\\Documents\\Classes\\Year 4\\CS465\\Git_Prog_1\\Server.properties";
+    String propertiesFile = "/home/vrm/Documents/school/CS465/CS465/Server.properties";
 
     public void start() {
         // Attempts to open the properties file

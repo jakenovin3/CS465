@@ -11,6 +11,7 @@ public class Sender extends Thread {
     public Sender(NodeInfo clientInfo) {
         try {
             serverConnection = new Socket(clientInfo.getIP(), clientInfo.getPort());
+            // create thread
             toServer = new ObjectOutputStream(serverConnection.getOutputStream());
 
         }
