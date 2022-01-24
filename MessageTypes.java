@@ -1,7 +1,8 @@
-public enum MessageTypes {
-    JOIN,
-    LEAVE,
-    NOTE,
-    SHUTDOWN,
-    SHUTDOWNALL
+public interface MessageTypes {
+    public enum MessageEnum {
+        JOIN,
+        LEAVE,
+        NOTE,
+        SHUTDOWN
+    }
 }
