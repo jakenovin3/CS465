@@ -1,17 +1,16 @@
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Receiver extends Thread {
-     // use a ServerSocket, the ports between the server and client serversocket must be distinct
-    ObjectInputStream fromServer = null;
+     // use a ServerSocket, the ports between the client serversocket and other clients must be distinct
+    ObjectInputStream fromClients = null;
 
     public void run() {
         try{
-            String displayMessage = (String) this.fromServer.readObject();
+            String displayMessage = (String) this.fromClients.readObject();
             System.out.println( "Message from server: " + displayMessage );
         } catch( ClassNotFoundException CNF) {}
         catch( IOException IOE ){}
@@ -21,7 +20,7 @@ public class Receiver extends Thread {
         try {
             ServerSocket receivingServerSocket = new ServerSocket(clientInfo.getPort());
             Socket serverConnection = receivingServerSocket.accept();
-            fromServer = new ObjectInputStream(serverConnection.getInputStream());
+            fromClients = new ObjectInputStream(serverConnection.getInputStream());
         }
         catch(IOException ex)
         {
