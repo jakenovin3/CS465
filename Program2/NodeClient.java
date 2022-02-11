@@ -16,6 +16,7 @@ public class NodeClient implements MessageTypes {
         BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 
         try {
+            // To Do: lets change this
             // Collects new user's name
             System.out.println( "Provide a name: " );
             name = reader.readLine();
@@ -28,14 +29,16 @@ public class NodeClient implements MessageTypes {
             
             // get port from user
             System.out.println( "Provide port: " );
-            portNum = Integer.parseInt(reader.readLine());
+            portNum = Integer.parseInt( reader.readLine() );
 
             // create and add node info to arraylist
             node = new NodeInfo( name, ip, portNum );
             activeParticipants.add(node);
 
-            // construct sender and receiver thread objects
+            // construct sender and receiver thread instances
+            // receiver has server socket.
             Receiver receiver = new Receiver( node );
+            // the sender connects deliberately because it has the connection info, can connect to someones receiver/serversocket
             Sender sender = new Sender( node );
             
             // run 2 threads
