@@ -1,17 +1,17 @@
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Receiver extends Thread {
-     // use a ServerSocket, the ports between the server and client serversocket must be distinct
-    ObjectInputStream fromServer = null;
-
+     // use a ServerSocket, the ports between the client serversocket and other clients must be distinct
+    ObjectInputStream fromClients = null;
+    // any message may be coming in from any other peer
+    // Needs some logic: look for the type of requests. Look at server. There is more responsibility, receiving leave or join requests
     public void run() {
         try{
-            String displayMessage = (String) this.fromServer.readObject();
+            String displayMessage = (String) this.fromClients.readObject();
             System.out.println( "Message from server: " + displayMessage );
         } catch( ClassNotFoundException CNF) {}
         catch( IOException IOE ){}
@@ -19,9 +19,10 @@ public class Receiver extends Thread {
 
     public Receiver(NodeInfo clientInfo) {
         try {
+            // have a server socket continuously looking for connection
             ServerSocket receivingServerSocket = new ServerSocket(clientInfo.getPort());
             Socket serverConnection = receivingServerSocket.accept();
-            fromServer = new ObjectInputStream(serverConnection.getInputStream());
+            fromClients = new ObjectInputStream(serverConnection.getInputStream());
         }
         catch(IOException ex)
         {

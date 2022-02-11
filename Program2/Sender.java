@@ -10,7 +10,8 @@ public class Sender extends Thread {
     Socket serverConnection = null;
     ObjectOutputStream toServer = null;
 
-
+    // without a server, a message must be handled completely by the client. In this context,
+    // if you join, you do not have the knowledge of anybody else other than the peer. Once you join the mesh topology you must know of everyone. 
     // need a run method
     public void run( String name, String ip, int portNum ) {
         NodeInfo node = new NodeInfo( name, ip, portNum );
@@ -20,7 +21,7 @@ public class Sender extends Thread {
         while( true ) {
             try {
                 input = reader.readLine();
-
+                // 
                 // When the user sends a JOIN
                 if (input.startsWith("JOIN")) {
                     // Connect to the other participants
