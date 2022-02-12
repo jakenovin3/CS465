@@ -10,6 +10,9 @@ public class Receiver extends Thread {
     // any message may be coming in from any other peer
     // Needs some logic: look for the type of requests. Look at server. There is more responsibility, receiving leave or join requests
     public void run() {
+        // To Do: handle receiving a join message (NodeInfo)
+        // handle receiving a leave message (NodeInfo)
+        // handle receiving a NOTE/text (String)
         try{
             String displayMessage = (String) this.fromClients.readObject();
             System.out.println( "Message from server: " + displayMessage );
