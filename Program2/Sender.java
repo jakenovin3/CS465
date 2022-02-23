@@ -47,21 +47,24 @@ public class Sender extends Thread {
                     else {
                         // get connectivity info
                         String[] connectInfo = input.split(" ")[1].split(",");
-                        if (connectInfo.size() != 2)
-                        // open objectOutputStream using connectivity info
-                        clientConnection = new Socket(connectInfo[0], (int)connectInfo[1]);
-                        toClient = new ObjectOutputStream(clientConnection.getOutputStream());
-                        // using OOS, send personal connectivity info (NodeInfo)
-                        // add yourself to activeParticipants
-                        activeParticipants.add(node);
-                        System.out.println("Connecting...");
-                        // Creating the join message
-                        Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, node);
-                        // Sending the join message to
-                        this.toClient.writeObject(joinMsg);
-                        this.toClient.close();
-                        // user successfully joined
-                        isJoined = true;
+                        if (connectInfo.length != 2) {
+                            System.out.println("Missing connectivity information.");
+                        }
+                        else {
+                            // open objectOutputStream using connectivity info
+                            clientConnection = new Socket(connectInfo[0], Integer.parseInt(connectInfo[1]));
+                            toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                            // add yourself to activeParticipants
+                            activeParticipants.add(node);
+                            System.out.println("Connecting...");
+                            // Creating the join message
+                            Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, node);
+                            // Sending the join message to
+                            this.toClient.writeObject(joinMsg);
+                            this.toClient.close();
+                            // user successfully joined
+                            isJoined = true;
+                        }
                     }
                 }
                 else if (input.startsWith("JOIN") && isJoined) {
