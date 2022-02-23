@@ -23,7 +23,6 @@ public class Sender extends Thread {
     public Sender( NodeInfo newNode ) {
         activeParticipants = new ArrayList<NodeInfo>();
         node = newNode;
-
     }
 
     public void run() {
