@@ -28,20 +28,20 @@ public class NodeClient implements MessageTypes {
 
             // print user info
             System.out.println(
-                                "Client information:\nName:" + infoArray[0]
-                                + "\nIP:" + infoArray[1]
-                                + "\nPort:" + infoArray[2]
-                                );
+                    "Client information:\nName:" + infoArray[0]
+                            + "\nIP:" + infoArray[1]
+                            + "\nPort:" + infoArray[2]
+            );
             // construct sender and receiver thread instances
             // receiver has server socket.
             System.out.println("Starting Receiver and Sender threads");
             Receiver receiver = new Receiver( node );
             // the sender connects deliberately because it has the connection info, can connect to someones receiver/serversocket
-            
+
             // currently the sender constructor creates a- local to this client- arraylist of NodeInfo/connectivity info. Should we construct this here?
             // we should expect to need to join first meaning we should not proceed with establishing our knowledge of others in the mesh until this user joins the session
             Sender sender = new Sender( node );
-            
+
             // run threads
             receiver.start();
             sender.start();
