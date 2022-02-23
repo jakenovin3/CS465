@@ -51,12 +51,12 @@ public class Sender extends Thread {
                             System.out.println("Missing connectivity information.");
                         }
                         else {
+                            System.out.println("Connecting...");
                             // open objectOutputStream using connectivity info
                             clientConnection = new Socket(connectInfo[0], Integer.parseInt(connectInfo[1]));
                             toClient = new ObjectOutputStream(clientConnection.getOutputStream());
                             // add yourself to activeParticipants
                             activeParticipants.add(node);
-                            System.out.println("Connecting...");
                             // Creating the join message
                             Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, node);
                             // Sending the join message to
@@ -86,7 +86,7 @@ public class Sender extends Thread {
                         // Creating the NOTE message
                         for ( NodeInfo participant : activeParticipants ) {
                             // iterate over participants. Send message to each in list, includes this client
-                            Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, participant);
+                            Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, input);
                             clientConnection = new Socket(participant.getIP(), participant.getPort());
                             toClient = new ObjectOutputStream(clientConnection.getOutputStream());
                             this.toClient.writeObject(noteMsg);
@@ -98,8 +98,9 @@ public class Sender extends Thread {
                     System.out.println( "You have not joined a session yet." );
                 }
             }
-            catch( IOException exception ) {
-                System.out.println( "Error at end of infinite loop" );
+            catch( IOException ex ) {
+                Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot connect to client", ex);
+                System.exit(1);
             }
         }
     }
