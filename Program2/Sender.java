@@ -48,6 +48,8 @@ public class Sender extends Thread {
         BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 
         while( true ) {
+            // implement array list counting, constantly comparing length of global list
+            //   with personal array list, probably as an update function
             try {
                 input = reader.readLine();
                 // To Do: alter sending of message to go to all users in participants list (once this client is in the session)
@@ -88,7 +90,7 @@ public class Sender extends Thread {
                     }
                     else { // When the user sends a NOTE
                         // Creating the NOTE message
-                        for (NodeInfo participant : activeParticipants) {
+                        for ( NodeInfo participant : activeParticipants ) {
                             // iterate over participants. Send message to each in list, includes this client
                             Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, participant);
                             clientConnection = new Socket(participant.getIP(), participant.getPort());
