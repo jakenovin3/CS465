@@ -38,21 +38,19 @@ public class Sender extends Thread {
                 // When the user sends a message with JOIN
                 if (input.startsWith("JOIN") && !isJoined) {
                     // if the user sends just "JOIN"
-                    if ( input.length() == "JOIN".length() ) { // change
-                        // if no one else is already in the chat room
-                        if ( activeParticipants.size() == 0 ) {
-                            // add yourself to activeParticipants
-                            activeParticipants.add(node);
-                            // user successfully joined
-                            isJoined = true;
-                        }
-                        else {
-                            // chat room already open, connectivity info must be provided to JOIN
-                            System.out.println("Please provide ip and port");
-                        }
+                    if ( input.length() == "JOIN".length() ) {
+                        // add yourself to activeParticipants
+                        activeParticipants.add(node);
+                        // user successfully joined
+                        isJoined = true;
                     }
                     else {
+                        // get connectivity info
+                        String[] connectInfo = input.split(" ")[1].split(",");
+                        if (connectInfo.size() != 2)
                         // open objectOutputStream using connectivity info
+                        clientConnection = new Socket(connectInfo[0], (int)connectInfo[1]);
+                        toClient = new ObjectOutputStream(clientConnection.getOutputStream());
                         // using OOS, send personal connectivity info (NodeInfo)
                         // add yourself to activeParticipants
                         activeParticipants.add(node);
