@@ -9,7 +9,8 @@ public class Message implements Serializable, MessageTypes {
         this.msgType = msgType;
 
         if( msgType == MessageEnum.JOIN
-                || msgType == MessageEnum.LEAVE ) {
+                || msgType == MessageEnum.LEAVE
+                || msgType == MessageEnum.SHUTDOWN ) {
             this.content = (NodeInfo) content;
         }
         else {
