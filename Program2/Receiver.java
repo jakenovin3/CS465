@@ -1,5 +1,3 @@
-package Program2;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -73,6 +71,10 @@ public class Receiver extends Thread {
 
         } catch( ClassNotFoundException CNF) {}
         catch( IOException IOE ){}
+    }
+
+    public ArrayList<NodeInfo> getUpdate() {
+        return activeParticipants;
     }
 
     public Receiver(NodeInfo clientInfo) {

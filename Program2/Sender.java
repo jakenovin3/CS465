@@ -36,26 +36,26 @@ public class Sender extends Thread {
 
         // infinite loop checking if message needs to be sent
         while( true ) {
-            // implement array list counting, constantly comparing length of global list
-            //   with personal array list, probably as an update function
-            if( activeParticipants.size() > numParticipants ) {
-                // update numParticipants
-                numParticipants++;
-                // send last nodeinfo (newly joined participant) in activeParticipants to all other active participants
-              for( NodeInfo participant : activeParticipants ) {
-                // open objectOutputStream using connectivity info
-                clientConnection = new Socket(participant.getIP(), participant.getPort());
-                toClient = new ObjectOutputStream(clientConnection.getOutputStream());
-                // add yourself to activeParticipants
-                activeParticipants.add(node);
-                // Creating the join message
-                Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants[numParticipants]);
-                // Sending the join message to
-                this.toClient.writeObject(joinMsg);
-                this.toClient.close();
-              }
-            }
             try {
+                // implement array list counting, constantly comparing length of global list
+                //   with personal array list, probably as an update function
+                if( activeParticipants.size() > numParticipants ) {
+                    // update numParticipants
+                    numParticipants++;
+                    // send last nodeinfo (newly joined participant) in activeParticipants to all other active participants
+                    for( NodeInfo participant : activeParticipants ) {
+                        // open objectOutputStream using connectivity info
+                        clientConnection = new Socket(participant.getIP(), participant.getPort());
+                        toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                        // add yourself to activeParticipants
+                        activeParticipants.add(node);
+                        // Creating the join message
+                        Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants.get(numParticipants));
+                        // Sending the join message to
+                        this.toClient.writeObject(joinMsg);
+                        this.toClient.close();
+                    }
+                }
                 // get the possible input
                 input = reader.readLine();
                 // When the user sends a message with JOIN
