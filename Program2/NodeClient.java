@@ -24,8 +24,11 @@ public class NodeClient implements MessageTypes {
             String[] infoArray = userInfo.split(",");
             // create and add personal node info to arraylist
             node = new NodeInfo( infoArray[0], infoArray[1], Integer.parseInt( infoArray[2] ) );
-            activeParticipants.add(node);
+            // To Do: add condition, if JOIN is input, then start new session and add this client node to active participants and use to start threads.
 
+            System.out.println( infoArray[0] + ": " );
+            userInfo = reader.readLine();
+            
             // print user info
             System.out.println(
                     "Client information:\nName:" + infoArray[0]
@@ -33,7 +36,6 @@ public class NodeClient implements MessageTypes {
                             + "\nPort:" + infoArray[2]
             );
             // construct sender and receiver thread instances
-            // receiver has server socket.
             System.out.println("Starting Receiver and Sender threads");
             Receiver receiver = new Receiver( node );
             // the sender connects deliberately because it has the connection info, can connect to someones receiver/serversocket
@@ -46,9 +48,19 @@ public class NodeClient implements MessageTypes {
             receiver.start();
             sender.start();
 
+            while( true ) {
+                // check for updates from receiver thread
+                ArrayList<NodeInfo> updatedParticipants = new ArrayList<NodeInfo>( receiver.getUpdate() );
+                if( updatedParticipants.size() > activeParticipants.size() ) {
+                    activeParticipants.clear();
+                    activeParticipants.addAll( updatedParticipants );
+                    sender.updateParticipants( updatedParticipants );
+                }
+            }
+
         }
         catch( IOException exception ) {
-            System.out.println( "Error at end of infinite loop" );
+            System.out.println( "IO error occurred." );
         }
     }
 

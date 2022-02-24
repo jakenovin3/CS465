@@ -15,14 +15,19 @@ import java.util.logging.Logger;
 
 public class Sender extends Thread {
     boolean isJoined = false;
+    int numParticipants = 1; // set to 1 to account for self
     NodeInfo node;
     Socket clientConnection = null;
     ObjectOutputStream toClient = null;
     private ArrayList<NodeInfo> activeParticipants;
-
     public Sender( NodeInfo newNode ) {
         activeParticipants = new ArrayList<NodeInfo>();
         node = newNode;
+    }
+
+    public void updateParticipants( ArrayList<NodeInfo> newParticipants ) {
+        activeParticipants.clear();
+        activeParticipants.addAll(newParticipants); // does this maintain order? sounds like it by description
     }
 
     public void run() {
@@ -31,6 +36,25 @@ public class Sender extends Thread {
 
         // infinite loop checking if message needs to be sent
         while( true ) {
+            // implement array list counting, constantly comparing length of global list
+            //   with personal array list, probably as an update function
+            if( activeParticipants.size() > numParticipants ) {
+                // update numParticipants
+                numParticipants++;
+                // send last nodeinfo (newly joined participant) in activeParticipants to all other active participants
+              for( NodeInfo participant : activeParticipants ) {
+                // open objectOutputStream using connectivity info
+                clientConnection = new Socket(participant.getIP(), participant.getPort());
+                toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                // add yourself to activeParticipants
+                activeParticipants.add(node);
+                // Creating the join message
+                Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants[numParticipants]);
+                // Sending the join message to
+                this.toClient.writeObject(joinMsg);
+                this.toClient.close();
+              }
+            }
             try {
                 // get the possible input
                 input = reader.readLine();
@@ -97,6 +121,7 @@ public class Sender extends Thread {
                     System.out.println( "You have not joined a session yet." );
                 }
             }
+
             catch( IOException ex ) {
                 Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot connect to client", ex);
                 System.exit(1);
