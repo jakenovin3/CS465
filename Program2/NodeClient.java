@@ -37,6 +37,15 @@ public class NodeClient implements MessageTypes {
             ServerSocket receivingServerSocket = new ServerSocket( node.getPort() );
             Receiver receiver = new Receiver( receivingServerSocket.accept() );
             receiver.start();
+            while( true ) {
+                // check for updates from receiver thread
+                ArrayList<NodeInfo> updatedParticipants = new ArrayList<NodeInfo>( receiver.getUpdate() );
+                if( updatedParticipants.size() > activeParticipants.size() ) {
+                    activeParticipants.clear();
+                    activeParticipants.addAll( updatedParticipants );
+                    sender.updateParticipants( updatedParticipants );
+                }
+            }
 
         }
         catch( IOException exception ) {
