@@ -1,9 +1,6 @@
-import org.w3c.dom.Node;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.logging.*;
 
 public class NodeClient implements MessageTypes {
     private static String userInfo = "";
@@ -35,7 +32,7 @@ public class NodeClient implements MessageTypes {
             Sender sender = new Sender( node );
             sender.start();
             ServerSocket receivingServerSocket = new ServerSocket( node.getPort() );
-            Receiver receiver = new Receiver( receivingServerSocket.accept() );
+            Receiver receiver = new Receiver( node, receivingServerSocket.accept() );
             receiver.start();
             while( true ) {
                 // check for updates from receiver thread

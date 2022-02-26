@@ -2,25 +2,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Receiver extends Thread {
      // use a ServerSocket, the ports between the client serversocket and other clients must be distinct
     ObjectInputStream fromClients = null;
-    ServerSocket receivingServerSocket;
     Socket clientConnection;
-    ArrayList<NodeInfo> activeParticipants = new ArrayList<NodeInfo>();
-    // any message may be coming in from any other peer
-    // Needs some logic: look for the type of requests. Look at server. There is more responsibility, receiving leave or join requests
+    ArrayList<NodeInfo> activeParticipants;
     public void run() {
 
-        // The client which is being connected to from an incoming client will hold the responsibility of notifying the
-        // rest of the chat of the incoming client
-            // Responsibilites:
-                // Tell every client to update their participant lists
-                    // Loop through each participant: update their lists (arrayList.add())
-                // Display "xxx has joined!"
         while( true )
         {
             try {
@@ -76,8 +65,10 @@ public class Receiver extends Thread {
         return activeParticipants;
     }
 
-    public Receiver( Socket clientSocket ) {
+    public Receiver( NodeInfo clientInfo, Socket clientSocket ) {
         
         clientConnection = clientSocket;
+        activeParticipants = new ArrayList<NodeInfo>();
+        activeParticipants.add(clientInfo);
     }
 }
