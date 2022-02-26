@@ -4,6 +4,7 @@ public class NodeInfo implements Serializable {
     private String logicalName = "";
     private String ip = "";
     private int portNum = -1;
+    private boolean isJoined = false;
 
     public boolean equals( Object compared ) {
         String comparedIP = ((NodeInfo) compared).getIP();
@@ -28,5 +29,9 @@ public class NodeInfo implements Serializable {
     public String getName() {
         return logicalName;
     }
+
+    public boolean checkJoined() { return isJoined; }
+
+    public void setJoined() { isJoined = !isJoined; }
 
 }

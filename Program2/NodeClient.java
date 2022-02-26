@@ -6,35 +6,51 @@ import java.util.*;
 import java.util.logging.*;
 
 public class NodeClient implements MessageTypes {
-    private static int portNum = 0;
-    private static String name, ip = "";
-    static Properties properties = null;
-    static String propertiesFile = "/home/vrm/Documents/school/CS465/CS465/Server.properties";
+    private static String userInfo = "";
+    public static ArrayList<NodeInfo> activeParticipants = new ArrayList<NodeInfo>();
     NodeInfo node;
 
     public void start() {
         // client should keep track of status on server
-        Boolean joined = false;
         BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
 
         try {
-            // Collects new user's name
-            System.out.println( "Provide a name: " );
-            name = reader.readLine();
-
-            System.out.println( "Welcome in! Waiting on instructions..." );
-            // Opens up connections
-//            Socket socket = new Socket( ip, portNum );
-            node = new NodeInfo( name, ip, portNum );
-            Receiver receiver = new Receiver( node );
+            // read input from user. Should be in format 'name,ip,port' ex. 'John,127.0.0.1,55555'
+            System.out.println( "Provide user info: " );
+            userInfo = reader.readLine();
+            System.out.println( "Welcome! Processing information..." );
+            // 0=name,1=ip,2=port
+            String[] infoArray = userInfo.split(",");
+            // create and add personal node info to arraylist
+            node = new NodeInfo( infoArray[0], infoArray[1], Integer.parseInt( infoArray[2] ) );
+            // print user info
+            System.out.println(
+                    "Client information:\nName:" + infoArray[0]
+                            + "\nIP:" + infoArray[1]
+                            + "\nPort:" + infoArray[2]
+            );
+            // construct sender and receiver thread instances
+            // receiver has server socket.
+            System.out.println("Starting Receiver and Sender threads");
             Sender sender = new Sender( node );
-
-            receiver.start();
             sender.start();
+            ServerSocket receivingServerSocket = new ServerSocket( node.getPort() );
+            Receiver receiver = new Receiver( receivingServerSocket.accept(), node );
+            receiver.start();
 
-            // Loop that keeps reading the client input string
-            // change the message types to uppercase
+            if( node.checkJoined() ) {
+                activeParticipants.add( node );
+            }
 
+            while( true ) {
+                // check for updates from receiver thread
+                ArrayList<NodeInfo> updatedParticipants = new ArrayList<NodeInfo>( receiver.getUpdate() );
+                if( updatedParticipants.size() > activeParticipants.size() ) {
+                    activeParticipants.clear();
+                    activeParticipants.addAll( updatedParticipants );
+                    sender.updateParticipants( updatedParticipants );
+                }
+            }
         }
         catch( IOException exception ) {
             System.out.println( "Error at end of infinite loop" );
@@ -42,39 +58,6 @@ public class NodeClient implements MessageTypes {
     }
 
     public static void main(String[] args) throws IOException {
-        // Attempts to open the properties file
-        try
-        {
-            properties = new utils.PropertyHandler(propertiesFile);
-        }
-        catch (IOException ex)
-        {
-            Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot open properties file", ex);
-            System.exit(1);
-        }
-
-        // Gets server IP from properties file
-        try
-        {
-            ip = properties.getProperty("SERVER_IP");
-        }
-        catch (Exception ex)
-        {
-            Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot read server IP", ex);
-            System.exit(1);
-        }
-
-        // Gets server PORT from properties file
-        try
-        {
-            portNum = Integer.parseInt( properties.getProperty("SERVER_PORT") );
-        }
-        catch (Exception ex)
-        {
-            Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot read server PORT", ex);
-            System.exit(1);
-        }
-
         // Creation of client object and starting it up
         NodeClient client = new NodeClient();
         client.start();
