@@ -37,10 +37,19 @@ public class NodeClient implements MessageTypes {
             while( true ) {
                 // check for updates from receiver thread
                 ArrayList<NodeInfo> updatedParticipants = new ArrayList<NodeInfo>( receiver.getUpdate() );
-                if( updatedParticipants.size() > activeParticipants.size() ) {
+                if( updatedParticipants.size() > 1 && updatedParticipants.size() > activeParticipants.size() ) {
+                    
+                    System.out.println("Current Session Participants: ");
+                    for( NodeInfo participant : activeParticipants ) {
+                        System.out.println(participant.getName());
+                    }
                     activeParticipants.clear();
                     activeParticipants.addAll( updatedParticipants );
-                    sender.updateParticipants( updatedParticipants );
+                    sender.updateParticipants( activeParticipants );
+                    System.out.println("Updated Session Participants: ");
+                    for( NodeInfo participant : activeParticipants ) {
+                        System.out.println(participant.getName());
+                    }
                 }
             }
 

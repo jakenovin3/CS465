@@ -32,19 +32,37 @@ public class Sender extends Thread {
         // infinite loop checking if message needs to be sent
         while( true ) {
             try {
+                System.out.println(activeParticipants.size());
                 // if there has been an update to activeParticipants from NodeClient
-                if( activeParticipants.size() > numParticipants && activeParticipants.size() > 2 ) {
+                if( activeParticipants.size() > numParticipants ) {
                     // update numParticipants
                     numParticipants++;
+                    System.out.println("Sharing info of: " + activeParticipants.get(numParticipants-1).getName());
+                    clientConnection = new Socket(activeParticipants.get(numParticipants-1).getIP(), activeParticipants.get(numParticipants-1).getPort());
+                    toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                    // share session participants info with newly joined person
                     for( int iter = 0; iter < activeParticipants.size() - 1; iter++ ) {
                         // open objectOutputStream using connectivity info
-                        clientConnection = new Socket(activeParticipants.get(iter).getIP(), activeParticipants.get(iter).getPort());
-                        toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                        
                         // Creating the join message
-                        Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants.get(numParticipants));
+                        Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants.get(iter));
                         // Sending the join message to
                         this.toClient.writeObject(joinMsg);
-                        this.toClient.close();
+                    }
+                    toClient.close();
+                    clientConnection.close();
+                    // share new joined person info with session participants
+                    if( activeParticipants.size() > 2 ) {
+                        for( int iter = 1; iter < activeParticipants.size() - 1; iter++ ) {
+                            clientConnection = new Socket(activeParticipants.get(iter).getIP(), activeParticipants.get(iter).getPort());
+                            toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                            // Creating the join message
+                            Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, activeParticipants.get(numParticipants-1));
+                            // Sending the join message to
+                            toClient.writeObject(joinMsg);
+                            toClient.close();
+                            clientConnection.close();
+                        }
                     }
                 }
                 input = reader.readLine();
@@ -78,8 +96,9 @@ public class Sender extends Thread {
                             // Creating the join message
                             Message joinMsg = new Message(MessageTypes.MessageEnum.JOIN, node);
                             // Sending the join message to
-                            this.toClient.writeObject(joinMsg);
-                            this.toClient.close();
+                            toClient.writeObject(joinMsg);
+                            toClient.close();
+                            clientConnection.close();
                             // user successfully joined
                             isJoined = true;
                         }
@@ -97,40 +116,47 @@ public class Sender extends Thread {
                 else if( isJoined ) {
                     // When the user sends a LEAVE
                     if (input.startsWith("LEAVE")) {
-                        for ( NodeInfo participant : activeParticipants ) {
+                        isJoined = !isJoined;
+                        for( int iter = 1; iter < activeParticipants.size(); iter++ ) {
                             // Creating the leave message
-                            clientConnection = new Socket(participant.getIP(), participant.getPort());
+                            clientConnection = new Socket(activeParticipants.get(iter).getIP(), activeParticipants.get(iter).getPort());
                             toClient = new ObjectOutputStream(clientConnection.getOutputStream());
                             Message leaveMsg = new Message(MessageTypes.MessageEnum.LEAVE, node);
-                            this.toClient.writeObject(leaveMsg);
-                            this.toClient.close();
+                            toClient.writeObject(leaveMsg);
+                            toClient.close();
+                            clientConnection.close();
                         }
+                        activeParticipants.clear();
                     }
                     else { // When the user sends a NOTE
                         // Creating the NOTE message
-                        for ( NodeInfo participant : activeParticipants ) {
-                                if( !participant.getName().equals(node.getName()) ) {
-                                System.out.println("Sending message to: " + participant.getName());
-                                // iterate over participants. Send message to each in list, includes this client
-                                input = node.getName() + ": " + input;
-                                Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, input);
-                                clientConnection = new Socket(participant.getIP(), participant.getPort());
-                                toClient = new ObjectOutputStream(clientConnection.getOutputStream());
-                                this.toClient.writeObject(noteMsg);
-                                this.toClient.close();
-                            }
+                        
+                        for( int iter = 1; iter < activeParticipants.size(); iter++ ) {
+                            System.out.println("Sending message to: " + activeParticipants.get(iter).getName());
+                            // iterate over participants. Send message to each in list, includes this client
+                            input = node.getName() + ": " + input;
+                            Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, input);
+                            clientConnection = new Socket(activeParticipants.get(iter).getIP(), activeParticipants.get(iter).getPort());
+                            toClient = new ObjectOutputStream(clientConnection.getOutputStream());
+                            toClient.writeObject(noteMsg);
+                            toClient.close();
+                            clientConnection.close();
                         }
+                        
                     }
                 }
                 else {
                     System.out.println( "You have not joined a session yet." );
                 }
             }
+            catch( SocketException sEx ){
 
-            catch( IOException ex ) {
+            }
+            catch( IOException ex ){
                 Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot connect to client", ex);
                 System.exit(1);
             }
+            
         }
     }
 }

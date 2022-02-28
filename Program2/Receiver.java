@@ -29,9 +29,18 @@ public class Receiver extends Thread {
                     if( message.getMessageType() == MessageTypes.MessageEnum.JOIN ) {
 
                         // Check if joining client is already within ArrayList, if not, add them
-                        if( !activeParticipants.contains( sendingNode ) ) {
+                        int size = 0;
+                        for( NodeInfo participant : activeParticipants ) {
+                            if( participant.getName() != sendingNode.getName() ) {
+                                size++;
+                            }
+                        }
+                        if( size == activeParticipants.size() ) {
                             activeParticipants.add( sendingNode );
                         }
+                        // if( !activeParticipants.contains( sendingNode ) ) {
+                        //     activeParticipants.add( sendingNode );
+                        // }
 
                         System.out.println( sendingNode.getName() + " has joined the chat!" );
                     }
@@ -49,7 +58,7 @@ public class Receiver extends Thread {
                     else if( message.getMessageType() == MessageTypes.MessageEnum.NOTE ) {
                         String noteMessage = (String) message.getMessageContent();
 
-                        System.out.println( "NOTE : " + noteMessage );
+                        System.out.println( noteMessage );
                     }
 
                     // Close connection
