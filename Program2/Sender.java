@@ -47,7 +47,6 @@ public class Sender extends Thread {
                         this.toClient.close();
                     }
                 }
-                // get the possible input
                 input = reader.readLine();
                 // When the user sends a message with JOIN
                 if (input.startsWith("JOIN") && !isJoined) {
