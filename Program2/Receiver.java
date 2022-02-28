@@ -46,11 +46,17 @@ public class Receiver extends Thread {
                     }
                     // Check if incoming message is LEAVE
                     else if( message.getMessageType() == MessageTypes.MessageEnum.LEAVE ) {
-
+                        
                         // Check if leaving client is already within ArrayList, if they are, remove them
-                        if( activeParticipants.contains( sendingNode ) ) {
-                            activeParticipants.remove( sendingNode );
+                        for( NodeInfo participant : activeParticipants ) {
+                            if( participant.getName() == sendingNode.getName() ) {
+                                activeParticipants.remove( sendingNode );
+                            }
                         }
+                        
+                        // if( activeParticipants.contains( sendingNode ) ) {
+                        //     activeParticipants.remove( sendingNode );
+                        // }
 
                         System.out.println( sendingNode.getName() + " has left the chat!" );
                     }

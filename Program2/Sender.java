@@ -37,7 +37,6 @@ public class Sender extends Thread {
                 if( activeParticipants.size() > numParticipants ) {
                     // update numParticipants
                     numParticipants++;
-                    System.out.println("Sharing info of: " + activeParticipants.get(numParticipants-1).getName());
                     clientConnection = new Socket(activeParticipants.get(numParticipants-1).getIP(), activeParticipants.get(numParticipants-1).getPort());
                     toClient = new ObjectOutputStream(clientConnection.getOutputStream());
                     // share session participants info with newly joined person
@@ -132,7 +131,6 @@ public class Sender extends Thread {
                         // Creating the NOTE message
                         
                         for( int iter = 1; iter < activeParticipants.size(); iter++ ) {
-                            System.out.println("Sending message to: " + activeParticipants.get(iter).getName());
                             // iterate over participants. Send message to each in list, includes this client
                             input = node.getName() + ": " + input;
                             Message noteMsg = new Message(MessageTypes.MessageEnum.NOTE, input);
@@ -148,9 +146,6 @@ public class Sender extends Thread {
                 else {
                     System.out.println( "You have not joined a session yet." );
                 }
-            }
-            catch( SocketException sEx ){
-
             }
             catch( IOException ex ){
                 Logger.getLogger(NodeClient.class.getName()).log(Level.SEVERE, "Cannot connect to client", ex);
