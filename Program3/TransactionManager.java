@@ -17,7 +17,9 @@ public class TransactionManager extends Thread{
             // Modifies user information based on incoming transaction (adds or removes some amount of dollars)
     
         // validate() function:
-            //
+            // Method to maintain atomicity
+                // Used so no two transactions can occur at the same time
+                // Arbitrarily assigns order for two (or more) incoming transactions asking to occur at the same time
     
         // writeTransaction() function:
             // under condition that validate passes, commit write request, invoke AccountManager write method to update account
