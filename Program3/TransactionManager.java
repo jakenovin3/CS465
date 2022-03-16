@@ -1,18 +1,39 @@
 public class TransactionManager extends Thread{
     // DESCRIPTION:
-
     // Manages transaction's id/# and logging information
-
     // This is the container for transactions:
         // Keeps list of active transactions
-
     // Has method (called in server loop) that takes socket to client, handing it
     // off to new starter 'TransactionManagerWorker' threads
         // TransactionManagerWorker threads:
             // Runs loop that reads messages coming from client ans translates them into high-level actions
-
-    // Implement write() function
-    // Implement validate() function
+    // read() function:
+    // 
+    
+    // write() function:
+    // 
+    
+    // validate() function:
+    // 
+    
+    // writeTransaction() function:
+    // under condition that validate passes, commit write request, invoke AccountManager write method to update account
+    
+    // openTransaction() function:
+    // send transaction id of opened transaction to proxy
+    // return id
+    
+    // closeTransaction() function:
+    // remove transaction from container/list
+    // send message back to client (commit or abort)
+    // close worker thread loop
+    
+    // runTransaction() function:
+    // takes in socket, creates worker thread, runs loop that reads and processes messages from client.
+    // Uses message to determine action:
+    // (OPEN_TRANSACTION, READ_REQUEST, WRITE_REQUEST, CLOSE_TRANSACTION)
+    // For action, create transaction object, assign ID and number to transaction, store transaction in transaction list
+    // return void
 
     //------------------------------------------------------------
     // USE CASE:
