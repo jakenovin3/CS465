@@ -5,6 +5,12 @@ public class TransactionClient {
         // running its own transaction
 
     // Client created that wants to initiate a transaction
+    
+    // METHODS:
+    // createProxy() function:
+    // creates proxy
+    // calls openTransaction() from transaction proxy object
+    // return void
 
     //------------------------------------------------------------
     // USE CASE:
