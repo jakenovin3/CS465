@@ -6,7 +6,7 @@ public class TransactionManager extends Thread{
         // Has method (called in server loop) that takes socket to client, handing it
         // off to new starter 'TransactionManagerWorker' threads
             // TransactionManagerWorker threads:
-                // Runs loop that reads messages coming from client ans translates them into high-level actions
+                // Runs loop that reads messages coming from client and translates them into high-level actions
 
     //------------------------------------------------------------
     // METHODS:
