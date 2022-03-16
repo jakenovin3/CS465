@@ -11,10 +11,10 @@ public class TransactionManager extends Thread{
     //------------------------------------------------------------
     // METHODS:
         // read() function:
-            //
+            // Gets information based on incoming transaction (how much money can be transferred on request)
     
         // write() function:
-            //
+            // Modifies user information based on incoming transaction (adds or removes some amount of dollars)
     
         // validate() function:
             //
