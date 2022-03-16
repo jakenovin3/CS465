@@ -11,10 +11,14 @@ public class TransactionManager extends Thread{
     //------------------------------------------------------------
     // METHODS:
         // read() function:
+            // Identifies the account the request is for (via AccountManager methods)
             // Gets information based on incoming transaction (how much money can be transferred on request)
+            // returns the info for the account in question
     
         // write() function:
+            // Identifies the account the request is for (via AccountManager methods)
             // Modifies user information based on incoming transaction (adds or removes some amount of dollars)
+            // returns the new info for the account in question after the transaction is complete
     
         // validate() function:
             // Method to maintain atomicity
@@ -55,20 +59,20 @@ public class TransactionManager extends Thread{
         // 7) Sends the transactionID back to proxy server
 
         // 11) Receives message of either type READ_REQUEST or WRITE_REQUEST from server
-        // Determines account that needs to be read/written to
-        // Calls read()/write() on the Transaction object
+            // Determines account that needs to be read/written to
+            // Calls read()/write() on the Transaction object
 
         // 14) After AccountManager returns result of their read()/write() operation to here
-        // Creates a message containing result and sends it back to proxy
+            // Creates a message containing result and sends it back to proxy
 
         // 18) Received CLOSE_TRANSACTION message from proxy
-        // Determines the Transaction that needs to be closed
-        // Runs validate():
-            // If conflict, abort
-            // If no conflict, writeTransaction() --> AccountManager
+            // Determines the Transaction that needs to be closed
+            // Runs validate():
+                // If conflict, abort
+                // If no conflict, writeTransaction() --> AccountManager
 
         // 19) Removes Transaction from transactionList arraylist
-        // Sends message of type TRANSACTION_COMMITTED back to client
-            // Also, closes network connections
-            // Leaves loop and returns from run()
+            // Sends message of type TRANSACTION_COMMITTED back to client
+                // Also, closes network connections
+                // Leaves loop and returns from run()
 }
