@@ -1,9 +1,9 @@
 public class TransactionServer {
     // DESCRIPTION:
-
+    // Stores and manages database accounts using AccountManager and TransactionManager objects.
     // Runs server loop
         // Server socket --> accept()
-
+    // Passes socket to TransactionManager
     //------------------------------------------------------------
     // USE CASE:
 
