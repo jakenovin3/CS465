@@ -5,10 +5,22 @@ public class TransactionServerProxy {
         // Contains usable API
 
         // Implements higher level functions:
-            // openTransaction()
-            // closeTransaction()
-            // read()
-            // write()
+    // METHODS:
+    // openTransaction() function:
+    // Use passed in socket to open connection with transaction server.
+    // Create an OPEN_TRANSACTION message and send message to transaction server.
+    // connection is kept open.
+    
+    // closeTransaction() function:
+    // Create message CLOSE_TRANSACTION and send to server on same connection opened.
+    // Once a message is received it should be either TRANSACTION_COMMITTED or TRANSACTION_ABORTED.
+    // Close connection and return
+    
+    // read() function:
+    // create READ_REQUEST MESSAGE and send message to transaction server on open connection.
+    
+    // write() function:
+    // create WRITE_REQUEST MESSAGE and send message to transaction server on open connection.
 
     //------------------------------------------------------------
     // USE CASE:
