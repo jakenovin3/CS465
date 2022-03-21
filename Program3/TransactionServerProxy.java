@@ -47,4 +47,8 @@ public class TransactionServerProxy {
         20) Receives the TRANSACTION_COMMITTED message from the TransactionManager
             returns from closeTransaction()
      */
+    Message messageTypes = new Message();
+    public int openTransaction( Socket socket ) {
+        return messageTypes.getOpenTrans();
+    }
 }

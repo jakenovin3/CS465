@@ -12,7 +12,7 @@ public class TransactionClient {
             creates proxy
             calls openTransaction() from transaction proxy object
             return void
-
+    
     ------------------------------------------------------------
     USE CASE:
 
@@ -23,4 +23,7 @@ public class TransactionClient {
         16) Client receives result sent from server proxy that came from TransactionManager
             Calls closeTransaction() on proxy
      */
+
+    TransactionServerProxy serverProxy = new TransactionServerProxy();
+    serverProxy.openTransaction();
 }

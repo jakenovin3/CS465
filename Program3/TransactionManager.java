@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class TransactionManager extends Thread{
     /*
     DESCRIPTION:
@@ -77,4 +79,37 @@ public class TransactionManager extends Thread{
                 Also, closes network connections
                 Leaves loop and returns from run()
      */
+    ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
+    private int message;
+    public void runTransaction( int receivedMessage ) {
+        message = receivedMessage;
+        this.start(); // is this allowed?
+    }
+
+    public void run() {
+        while( true ) {
+            switch (message) {
+                case 0: //open transaction
+                    Transaction trans = new Transaction();
+                    trans.setNumber();
+                    break;
+    
+                case 1:
+                    break;
+    
+                case 2:
+                    break;
+                
+                case 3:
+                    break;
+    
+                case 4:
+    
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+    }
 }

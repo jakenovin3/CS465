@@ -19,4 +19,24 @@ public class Transaction {
                 assign most recent transaction number
                 returns void
      */
+
+     private int transID;
+     private int transNum;
+
+     public void setID( int newID ) {
+         transID = newID;
+     }
+     public int getID() {
+         return transID;
+     }
+
+     public void setNumber( int newNum ) {
+         transNum = newNum;
+     }
+
+     public int getNumber() {
+         return transNum;
+     }
+
+    
 }
