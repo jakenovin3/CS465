@@ -20,54 +20,61 @@ public class Receiver extends Thread {
 
         // The client which is being connected to from an incoming client will hold the responsibility of notifying the
         // rest of the chat of the incoming client
-            // Responsibilites:
+            // Responsibilities:
                 // Tell every client to update their participant lists
                     // Loop through each participant: update their lists (arrayList.add())
                 // Display "xxx has joined!"
 
         try{
-            // Opens up input stream which gets message from the sender's output stream
-            ObjectInputStream fromClient = new ObjectInputStream( clientConnection.getInputStream() );
+            while( true )
+            {
+                clientConnection = receivingServerSocket.accept();
+                // Opens up input stream which gets message from the sender's output stream
+                ObjectInputStream fromClient = new ObjectInputStream( clientConnection.getInputStream() );
 
-            // Makes the incoming message a 'Message' type
-            Message message = (Message) fromClient.readObject();
+                // Makes the incoming message a 'Message' type
+                Message message = (Message) fromClient.readObject();
 
-            NodeInfo sendingNode = null;
-            // Checks if message is a JOIN or LEAVE, make its content NodeInfo
-            if( message.getMessageType() != MessageTypes.MessageEnum.NOTE ) {
-                sendingNode = (NodeInfo) message.getMessageContent();
-            }
-
-            // Check if incoming message is JOIN
-            if( message.getMessageType() == MessageTypes.MessageEnum.JOIN ) {
-
-                // Check if joining client is already within ArrayList, if not, add them
-                if( !activeParticipants.contains( sendingNode ) ) {
-                    activeParticipants.add( sendingNode );
+                NodeInfo sendingNode = null;
+                // Checks if message is a JOIN or LEAVE, make its content NodeInfo
+                if( message.getMessageType() != MessageTypes.MessageEnum.NOTE ) {
+                    sendingNode = (NodeInfo) message.getMessageContent();
                 }
 
-                System.out.println( sendingNode.getName() + " has joined the chat!" );
-            }
-            // Check if incoming message is LEAVE
-            else if( message.getMessageType() == MessageTypes.MessageEnum.LEAVE ) {
+                // Check if incoming message is JOIN
+                if( message.getMessageType() == MessageTypes.MessageEnum.JOIN ) {
 
-                // Check if leaving client is already within ArrayList, if they are, remove them
-                if( activeParticipants.contains( sendingNode ) ) {
-                    activeParticipants.remove( sendingNode );
+                    // Note: For checking if a client is in the arrayList, aP.contain() may not work
+                    // Might have to change this to a for() loop iterating through the list or something
+
+                    // Check if joining client is already within ArrayList, if not, add them
+                    if( !activeParticipants.contains( sendingNode ) ) {
+                        activeParticipants.add( sendingNode );
+                    }
+
+                    System.out.println( sendingNode.getName() + " has joined the chat!" );
+                }
+                // Check if incoming message is LEAVE
+                else if( message.getMessageType() == MessageTypes.MessageEnum.LEAVE ) {
+
+                    // Check if leaving client is already within ArrayList, if they are, remove them
+                    if( activeParticipants.contains( sendingNode ) ) {
+                        activeParticipants.remove( sendingNode );
+                    }
+
+                    System.out.println( sendingNode.getName() + " has left the chat!" );
+                }
+                // Check if incoming message is a NOTE
+                else if( message.getMessageType() == MessageTypes.MessageEnum.NOTE ) {
+                    String noteMessage = (String) message.getMessageContent();
+
+                    System.out.println( "NOTE : " + noteMessage );
                 }
 
-                System.out.println( sendingNode.getName() + " has left the chat!" );
+                // Close connection
+                fromClient.close();
+                clientConnection.close();
             }
-            // Check if incoming message is a NOTE
-            else if( message.getMessageType() == MessageTypes.MessageEnum.NOTE ) {
-                String noteMessage = (String) message.getMessageContent();
-
-                System.out.println( "NOTE : " + noteMessage );
-            }
-
-            // Close connection
-            fromClient.close();
-            clientConnection.close();
 
         } catch( ClassNotFoundException CNF) {}
         catch( IOException IOE ){}
@@ -83,13 +90,10 @@ public class Receiver extends Thread {
             activeParticipants.add( clientInfo );
 
             // The thread .start() might need to be removed from the NodeClient class
-            while( true )
-            {
-                ServerSocket receivingServerSocket = new ServerSocket( clientInfo.getPort() );
-                clientConnection = receivingServerSocket.accept();
-                new Thread( (Runnable) clientConnection ).start();
-                receivingServerSocket.close();
-            }
+            receivingServerSocket = new ServerSocket( clientInfo.getPort() );
+            // new Thread((Runnable) clientConnection).start();
+            // Opens up input stream which gets message from the sender's output stream
+            // ObjectInputStream fromClient = new ObjectInputStream( clientConnection.getInputStream() );
         }
         catch(IOException ex)
         {

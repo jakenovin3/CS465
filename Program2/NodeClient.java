@@ -25,9 +25,6 @@ public class NodeClient implements MessageTypes {
             // create and add personal node info to arraylist
             node = new NodeInfo( infoArray[0], infoArray[1], Integer.parseInt( infoArray[2] ) );
             // To Do: add condition, if JOIN is input, then start new session and add this client node to active participants and use to start threads.
-
-            System.out.println( infoArray[0] + ": " );
-            userInfo = reader.readLine();
             
             // print user info
             System.out.println(
@@ -37,16 +34,19 @@ public class NodeClient implements MessageTypes {
             );
             // construct sender and receiver thread instances
             System.out.println("Starting Receiver and Sender threads");
+            Sender sender = new Sender( node );
+            sender.start();
             Receiver receiver = new Receiver( node );
             // the sender connects deliberately because it has the connection info, can connect to someones receiver/serversocket
 
             // currently the sender constructor creates a- local to this client- arraylist of NodeInfo/connectivity info. Should we construct this here?
             // we should expect to need to join first meaning we should not proceed with establishing our knowledge of others in the mesh until this user joins the session
-            Sender sender = new Sender( node );
+
 
             // run threads
             receiver.start();
-            sender.start();
+            // sender.start();
+
 
             while( true ) {
                 // check for updates from receiver thread
@@ -57,6 +57,8 @@ public class NodeClient implements MessageTypes {
                     sender.updateParticipants( updatedParticipants );
                 }
             }
+
+
 
         }
         catch( IOException exception ) {
