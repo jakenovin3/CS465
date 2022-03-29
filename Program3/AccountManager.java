@@ -1,5 +1,8 @@
 public class AccountManager {
-    /*
+
+}
+
+/*
     DESCRIPTION:
         Manages Accounts that can be read and written to
         Here, it implements the "high-level" operations on individual accounts (read and write)
@@ -22,6 +25,5 @@ public class AccountManager {
 
         13) Here, it issues the low-level read()/write() call on Account and returns the result to TransactionManagerWorker
      */
-}
 
 
