@@ -1,5 +1,29 @@
+import java.io.*;
+import java.net.*;
+
 public class TransactionServerProxy {
-    /*
+    Message messageTypes = new Message();
+    Socket serverConnection = null;
+    ObjectOutputStream toServer = null;
+
+    public int openTransaction( Socket socket ) {
+
+        while(true) {
+            try{
+                int openMessage = messageTypes.getOpenTrans();
+                serverConnection = new Socket("127.0.0.1", 55555);
+
+                toServer = new ObjectOutputStream(serverConnection.getOutputStream());
+                toServer.writeObject(openMessage);
+            }
+            catch(IOException IOE) {
+                System.out.println("TransactionServerProxy: IOE");
+            }
+        }
+    }
+}
+
+/*
     DESCRIPTION:
         Abstracted server that the client interacts with
         Contains usable API
@@ -47,8 +71,3 @@ public class TransactionServerProxy {
         20) Receives the TRANSACTION_COMMITTED message from the TransactionManager
             returns from closeTransaction()
      */
-    Message messageTypes = new Message();
-    public int openTransaction( Socket socket ) {
-        return messageTypes.getOpenTrans();
-    }
-}

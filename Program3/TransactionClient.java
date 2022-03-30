@@ -1,5 +1,76 @@
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
 public class TransactionClient {
-    /*
+
+    String serverIP;
+    int serverPort;
+    int numAccounts;
+    int accountBalance;
+
+    public void start() {
+
+        try{
+            TransactionServerProxy serverProxy = new TransactionServerProxy();
+            Socket toProxy = new Socket(serverIP, serverPort);
+
+            serverProxy.openTransaction(toProxy);
+
+
+        }
+        catch(IOException IOE){}
+    }
+
+    public void getProperties() {
+
+        try(InputStream input = new FileInputStream("Program3/Server.properties")){
+            Properties prop = new Properties();
+            prop.load(input);
+
+            serverIP = prop.getProperty("SERVER_IP");
+            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
+            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+        }
+        catch(IOException IOE) {}
+    }
+
+    public static void main(String[] args) {
+        String serverIP;
+        int serverPort;
+        int numAccounts;
+        int accountBalance;
+
+        try(InputStream input = new FileInputStream("Program3/Server.properties")){
+            Properties prop = new Properties();
+            prop.load(input);
+
+            serverIP = prop.getProperty("SERVER_IP");
+            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
+            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+
+            System.out.println("================================");
+            System.out.println("TRANSACTION SERVER CONFIGURATION\n");
+            System.out.println("Server IP: " + serverIP);
+            System.out.println("Server Port: " + serverPort);
+            System.out.println("Number of Accounts: " + numAccounts);
+            System.out.println("Account Balance: " + accountBalance);
+            System.out.println("================================");
+
+            TransactionClient client = new TransactionClient();
+            client.getProperties();
+            client.start();
+        }
+        catch(IOException IOE) {}
+    }
+
+    // When this calls read()/write() on proxy server, does it randomly select the operation to do?
+
+}
+
+/*
     DESCRIPTION:
         IMPORTANT: The scenario the USE CASE runs through is the client running one transaction
             For the project, client will be able to create a configurable number of threads, each one
@@ -12,7 +83,7 @@ public class TransactionClient {
             creates proxy
             calls openTransaction() from transaction proxy object
             return void
-    
+
     ------------------------------------------------------------
     USE CASE:
 
@@ -23,7 +94,3 @@ public class TransactionClient {
         16) Client receives result sent from server proxy that came from TransactionManager
             Calls closeTransaction() on proxy
      */
-
-    TransactionServerProxy serverProxy = new TransactionServerProxy();
-    serverProxy.openTransaction();
-}

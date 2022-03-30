@@ -1,7 +1,58 @@
 import java.util.ArrayList;
 
-public class TransactionManager extends Thread{
-    /*
+public class TransactionManager{
+
+    ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
+    private int message;
+
+    public void runTransaction( int receivedMessage ) {
+        message = receivedMessage;
+        TransactionManagerWorker transactionWorker = new TransactionManagerWorker();
+        transactionWorker.start();
+    }
+
+    public class TransactionManagerWorker extends Thread {
+
+        int idCounter = 0;
+
+        public TransactionManagerWorker() {
+
+        }
+
+        public void run() {
+            while( true ) {
+                switch (message) {
+                    case 0: //open transaction
+                        Transaction transaction = new Transaction(idCounter);
+                        transactionList.add(transaction);
+
+
+
+                        idCounter++;
+                        break;
+
+                    case 1:
+                        break;
+
+                    case 2:
+                        break;
+
+                    case 3:
+                        break;
+
+                    case 4:
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+}
+
+/*
     DESCRIPTION:
         Manages transaction's id/# and logging information
         This is the container for transactions:
@@ -17,29 +68,29 @@ public class TransactionManager extends Thread{
             Identifies the account the request is for (via AccountManager methods)
             Gets information based on incoming transaction (how much money can be transferred on request)
             returns the info for the account in question
-    
+
         write() function:
             Identifies the account the request is for (via AccountManager methods)
             Modifies user information based on incoming transaction (adds or removes some amount of dollars)
             returns the new info for the account in question after the transaction is complete
-    
+
         validate() function:
             Method to maintain atomicity
                 Used so no two transactions can occur at the same time
                 Arbitrarily assigns order for two (or more) incoming transactions asking to occur at the same time
-    
+
         writeTransaction() function:
             under condition that validate passes, commit write request, invoke AccountManager write method to update account
-    
+
         openTransaction() function:
             send transaction id of opened transaction to proxy
             return id
-    
+
         closeTransaction() function:
             remove transaction from container/list
             send message back to client (commit or abort)
             close worker thread loop
-    
+
         runTransaction() function:
             takes in socket, creates worker thread, runs loop that reads and processes messages from client.
             Uses message to determine action:
@@ -79,37 +130,3 @@ public class TransactionManager extends Thread{
                 Also, closes network connections
                 Leaves loop and returns from run()
      */
-    ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
-    private int message;
-    public void runTransaction( int receivedMessage ) {
-        message = receivedMessage;
-        this.start(); // is this allowed?
-    }
-
-    public void run() {
-        while( true ) {
-            switch (message) {
-                case 0: //open transaction
-                    Transaction trans = new Transaction();
-                    trans.setNumber();
-                    break;
-    
-                case 1:
-                    break;
-    
-                case 2:
-                    break;
-                
-                case 3:
-                    break;
-    
-                case 4:
-    
-                    break;
-            
-                default:
-                    break;
-            }
-        }
-    }
-}

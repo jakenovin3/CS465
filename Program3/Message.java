@@ -1,17 +1,5 @@
 public class Message {
-    /*
-    DESCRIPTION:
-        Manipulates given message data, organizes each message into individual objects
-        implements MessageTypes
 
-    ------------------------------------------------------------
-    METHODS:
-        getMessageType()
-            returns message type
-
-        getMessageContent()
-            returns content within message object
-     */
     private int OPEN_TRANSACTION = 0;
     private int CLOSE_TRANSACTION = 1;
     private int TRANSACTION_COMMITTED = 2;
@@ -38,3 +26,17 @@ public class Message {
         return WRITE_REQUEST;
     }
 }
+
+/*
+    DESCRIPTION:
+        Manipulates given message data, organizes each message into individual objects
+        implements MessageTypes
+
+    ------------------------------------------------------------
+    METHODS:
+        getMessageType()
+            returns message type
+
+        getMessageContent()
+            returns content within message object
+     */

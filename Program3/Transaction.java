@@ -23,6 +23,10 @@ public class Transaction {
      private int transID;
      private int transNum;
 
+     public Transaction(int id) {
+         transID = id;
+     }
+
      public void setID( int newID ) {
          transID = newID;
      }
