@@ -1,55 +1,96 @@
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TransactionManager{
+    // key = transaction ID
+    HashMap<Integer, Transaction> transactionMap = new HashMap<>();
+    // key = transaction number?
+    HashMap<Integer, Transaction> readyToValidate = new HashMap<>();
+    private int idCounter = 0;
+    /*
+        Identifies the account the request is for (via AccountManager methods).
+        Gets information based on incoming transaction (how much money can be
+        transferred on request) returns the info for the account in question
+    */
 
-    ArrayList<Transaction> transactionList = new ArrayList<Transaction>();
-    private int message;
-
-    public void runTransaction( int receivedMessage ) {
-        message = receivedMessage;
+    /*
+    Method: 1) Receives message type ID
+            2) Creates worker thread
+            3) Starts worker thread to handle transaction
+    */
+    public void runTransaction() {
         TransactionManagerWorker transactionWorker = new TransactionManagerWorker();
         transactionWorker.start();
     }
 
-    public class TransactionManagerWorker extends Thread {
-
-        int idCounter = 0;
+    public class TransactionManagerWorker extends Thread
+    {
+        private int message = -1;
+        private int update = 0;
 
         public TransactionManagerWorker() {
 
         }
 
+        // Function used to get updates from proxy
+        public void receiveMessage( int newMessage, int content )
+        {
+            message = newMessage;
+            update = content;
+        }
+
+        // If the validated transaction does not exist or a transaction to be validated
+        // is ahead of this transaction, then return false otherwise is valid
+        public boolean validate(Transaction nextTransaction)
+        {
+            if (nextTransaction == null
+                || readyToValidate.get(nextTransaction.getNumber()-1) != null)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public void run() {
+            int lastValidated = 0;
             while( true ) {
                 switch (message) {
                     case 0: //open transaction
                         Transaction transaction = new Transaction(idCounter);
-                        transactionList.add(transaction);
-
-
-
-                        idCounter++;
+                        transactionMap.putIfAbsent(idCounter++, transaction);
+                        System.out.println("Transaction ID: " + Integer.toString(idCounter) + " opened");
                         break;
 
-                    case 1:
+                    case 1: // close transaction
+                        // Determines the Transaction that needs to be closed
+                        if(validate(readyToValidate.get(lastValidated))) // does it make sense to 
+                        {
+                            transactionMap.remove(lastValidated);
+                        }
+                        else
+                        {
+                            // undo and abort
+                        }
                         break;
 
-                    case 2:
+                    case 2: // transaction committed
                         break;
 
-                    case 3:
+                    case 3: // transaction read
+                        // call account read function
+                        // send result back to proxy
                         break;
 
-                    case 4:
-
+                    case 4: // transaction write                        
+                        AccountManager.write(lastValidated, update );
+                        // send result back to proxy
                         break;
 
-                    default:
+                    default: // erroneous entry message?
                         break;
                 }
             }
         }
-    }
+    } // End of Inner Class
 }
 
 /*
