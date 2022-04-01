@@ -9,6 +9,23 @@ public class TransactionClient {
     int numAccounts;
     int accountBalance;
 
+    // Concstructor obatining server and config information
+    public TransactionClient() {
+
+        try(InputStream input = new FileInputStream("Program3/Server.properties")){
+
+            Properties prop = new Properties();
+            prop.load(input);
+
+            // Obtaining server details
+            serverIP = prop.getProperty("SERVER_IP");
+            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
+            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+        }
+        catch(IOException IOE) {}
+    }
+
     public void start() {
 
         try{
@@ -16,7 +33,6 @@ public class TransactionClient {
             Socket toProxy = new Socket(serverIP, serverPort);
 
             serverProxy.openTransaction(toProxy);
-
 
         }
         catch(IOException IOE){}
@@ -42,6 +58,7 @@ public class TransactionClient {
         int numAccounts;
         int accountBalance;
 
+        // Obtain configuration information and display
         try(InputStream input = new FileInputStream("Program3/Server.properties")){
             Properties prop = new Properties();
             prop.load(input);
@@ -58,12 +75,11 @@ public class TransactionClient {
             System.out.println("Number of Accounts: " + numAccounts);
             System.out.println("Account Balance: " + accountBalance);
             System.out.println("================================");
-
-            TransactionClient client = new TransactionClient();
-            client.getProperties();
-            client.start();
         }
         catch(IOException IOE) {}
+
+        TransactionClient client = new TransactionClient();
+        client.start();
     }
 
     // When this calls read()/write() on proxy server, does it randomly select the operation to do?

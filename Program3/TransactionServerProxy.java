@@ -1,23 +1,97 @@
 import java.io.*;
 import java.net.*;
+import java.util.Properties;
 
-public class TransactionServerProxy {
-    Message messageTypes = new Message();
+public class TransactionServerProxy extends Thread {
+
+    String serverIP;
+    int serverPort;
+    int numAccounts;
+    int accountBalance;
+
+    Message transactionMessage = new Message();
     Socket serverConnection = null;
+    ObjectInputStream fromServer;
     ObjectOutputStream toServer = null;
 
-    public int openTransaction( Socket socket ) {
+    public TransactionServerProxy() {
+
+        try(InputStream input = new FileInputStream("Program3/Server.properties")){
+
+            Properties prop = new Properties();
+            prop.load(input);
+
+            // Obtaining server details
+            serverIP = prop.getProperty("SERVER_IP");
+            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
+            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+
+            // Connecting to server and opening up the object streams
+            serverConnection = new Socket(serverIP, serverPort);
+            toServer = new ObjectOutputStream(serverConnection.getOutputStream());
+            fromServer = new ObjectInputStream(serverConnection.getInputStream());
+        }
+        catch(IOException IOE) {}
+    }
+
+    public int openTransaction(Socket socket) {
 
         while(true) {
             try{
-                int openMessage = messageTypes.getOpenTrans();
-                serverConnection = new Socket("127.0.0.1", 55555);
+                int openMessage = transactionMessage.getOpenTrans();
+                serverConnection = new Socket(serverIP, serverPort);
 
                 toServer = new ObjectOutputStream(serverConnection.getOutputStream());
                 toServer.writeObject(openMessage);
             }
             catch(IOException IOE) {
-                System.out.println("TransactionServerProxy: IOE");
+                System.out.println("TransactionServerProxy: Error sending Open message to Server");
+            }
+        }
+    }
+
+    public int closeTransaction(Socket socket) {
+
+        while(true) {
+            try{
+                int closeMessage = transactionMessage.getClosedTrans();
+                toServer.writeObject(closeMessage);
+            }
+            catch(IOException IOE) {
+                System.out.println("TransactionServerProxy: Error sending Close message to Server");
+            }
+        }
+    }
+
+    public int read(Socket socket) {
+
+        while(true) {
+            try{
+                int readMessage = transactionMessage.getReadReq();
+                serverConnection = new Socket(serverIP, serverPort);
+
+                toServer = new ObjectOutputStream(serverConnection.getOutputStream());
+                toServer.writeObject(readMessage);
+            }
+            catch(IOException IOE) {
+                System.out.println("TransactionServerProxy: Error sending message to Server");
+            }
+        }
+    }
+
+    public int write(Socket socket) {
+
+        while(true) {
+            try{
+                int writeMessage = transactionMessage.getWriteReq();
+                serverConnection = new Socket(serverIP, serverPort);
+
+                toServer = new ObjectOutputStream(serverConnection.getOutputStream());
+                toServer.writeObject(writeMessage);
+            }
+            catch(IOException IOE) {
+                System.out.println("TransactionServerProxy: Error sending message to Server");
             }
         }
     }
