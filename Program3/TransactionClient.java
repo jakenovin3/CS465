@@ -2,12 +2,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class TransactionClient {
+public class TransactionClient extends Thread{
 
     String serverIP;
     int serverPort;
     int numAccounts;
     int accountBalance;
+    int numTransactions;
+
+    ArrayList<Transaction> transactionList = new ArrayList<>();
 
     // Concstructor obatining server and config information
     public TransactionClient() {
@@ -22,34 +25,79 @@ public class TransactionClient {
             serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
             numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
             accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+            numTransactions = Integer.parseInt(prop.getProperty("NUM_TRANSACTIONS"));
         }
         catch(IOException IOE) {}
     }
 
-    public void start() {
+    public void run() {
 
-        try{
-            TransactionServerProxy serverProxy = new TransactionServerProxy();
-            Socket toProxy = new Socket(serverIP, serverPort);
+        Thread newTransactionThread;
+        int transID;
+        for(transID = 0; transID < numTransactions; transID++) {
+            Transaction newTransaction = new Transaction(transID);
+            transactionList.add(newTransaction);
 
-            serverProxy.openTransaction(toProxy);
-
+            newTransactionThread = new TransactionThread();
+            newTransactionThread.start();
         }
-        catch(IOException IOE){}
     }
 
-    public void getProperties() {
+    // These are the actual accounts created and transactions that are going to occur
+    public class TransactionThread extends Thread {
 
-        try(InputStream input = new FileInputStream("Program3/Server.properties")){
-            Properties prop = new Properties();
-            prop.load(input);
+        public void run() {
 
-            serverIP = prop.getProperty("SERVER_IP");
-            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
-            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
-            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
+            int senderAccountID, receiverAccountID;
+            int amountToTransfer;
+            int transID;
+            int accountBalance;
+            int maxTransferAmount = 100; // Change to set the limit on money sent
+            int transactionStatus;
+
+            // Setting up which accounts will be sending and receiving money
+            senderAccountID = (int) (Math.random() * numAccounts);
+            receiverAccountID = (int) (Math.random() * numAccounts);
+            amountToTransfer = (int) (Math.random() * maxTransferAmount);
+
+            // If the same account is chosen at random, choose new account until different
+            if(senderAccountID == receiverAccountID) {
+                while(senderAccountID == receiverAccountID) {
+                    receiverAccountID = (int) (Math.random() * 10);
+                }
+            }
+
+            TransactionServerProxy transactionProxy = new TransactionServerProxy(serverIP, serverPort);
+            transID = transactionProxy.openTransaction();
+            if(transID == 1) {
+                System.out.println("Transaction # " + transID + " initialized...");
+                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+            }
+
+            // This is the withdrawal of money from the sender's account
+            accountBalance = transactionProxy.read(senderAccountID);
+            transactionProxy.write(senderAccountID, accountBalance - amountToTransfer);
+            System.out.println("Transaction #: " + transID + " withdrawal request...");
+            System.out.println("--- Withdraw Amount:   - $" + amountToTransfer);
+
+            // This is the deposit of money into the receiver's account
+            accountBalance = transactionProxy.read(receiverAccountID);
+            transactionProxy.write(receiverAccountID, accountBalance + amountToTransfer);
+            System.out.println("Transaction #: " + transID + " deposit request...");
+            System.out.println("--- Deposit Amount:   + $" + amountToTransfer);
+
+            transactionStatus = transactionProxy.closeTransaction();
+            if(transactionStatus == 1) {
+                System.out.println("Transaction # " + transID + " COMMITTED");
+                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+            }
+            else {
+                System.out.println("Transaction # " + transID + " ABORTED");
+                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+            }
+
         }
-        catch(IOException IOE) {}
+
     }
 
     public static void main(String[] args) {

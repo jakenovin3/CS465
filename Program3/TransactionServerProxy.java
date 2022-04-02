@@ -14,35 +14,26 @@ public class TransactionServerProxy extends Thread {
     ObjectInputStream fromServer;
     ObjectOutputStream toServer = null;
 
-    public TransactionServerProxy() {
+    public TransactionServerProxy(String serverIP, int serverPort) {
 
-        try(InputStream input = new FileInputStream("Program3/Server.properties")){
-
-            Properties prop = new Properties();
-            prop.load(input);
-
-            // Obtaining server details
-            serverIP = prop.getProperty("SERVER_IP");
-            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
-            numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
-            accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
-
+        try {
             // Connecting to server and opening up the object streams
             serverConnection = new Socket(serverIP, serverPort);
             toServer = new ObjectOutputStream(serverConnection.getOutputStream());
             fromServer = new ObjectInputStream(serverConnection.getInputStream());
         }
-        catch(IOException IOE) {}
+        catch(IOException IOE) {
+
+        }
+
     }
 
-    public int openTransaction(Socket socket) {
+    public int openTransaction() {
 
         while(true) {
             try{
+                // Gets message type and writes it to the server socket
                 int openMessage = transactionMessage.getOpenTrans();
-                serverConnection = new Socket(serverIP, serverPort);
-
-                toServer = new ObjectOutputStream(serverConnection.getOutputStream());
                 toServer.writeObject(openMessage);
             }
             catch(IOException IOE) {
@@ -51,7 +42,8 @@ public class TransactionServerProxy extends Thread {
         }
     }
 
-    public int closeTransaction(Socket socket) {
+    // Returns a value representing if the transaction committed or aborted (TRANSACTION_COMMITTED OR TRANSACTION_ABORTED)
+    public int closeTransaction() {
 
         while(true) {
             try{
@@ -64,7 +56,7 @@ public class TransactionServerProxy extends Thread {
         }
     }
 
-    public int read(Socket socket) {
+    public int read(int accountNumber) {
 
         while(true) {
             try{
@@ -80,7 +72,9 @@ public class TransactionServerProxy extends Thread {
         }
     }
 
-    public int write(Socket socket) {
+    public int write(int accountNumber, int newBalance) {
+
+        int newAccountBalance = newBalance;
 
         while(true) {
             try{
