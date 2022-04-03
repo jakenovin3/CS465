@@ -13,7 +13,6 @@ public class TransactionManager{
     private ArrayList<Transaction> runningTransactions = new ArrayList<>();
     private int idCounter = 0;
     private int numCounter = 0;
-    private int portCount = 1;
     /*
         Identifies the account the request is for (via AccountManager methods).
         Gets information based on incoming transaction (how much money can be
@@ -78,40 +77,14 @@ public class TransactionManager{
         private Socket client;
         Transaction transaction = null;
         public TransactionManagerWorker( int receivedMessage, Socket client ) {
-            try{
-                message = receivedMessage;
-                this.client = client;
-                ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
-                // set port to counter, increment for next thread, send port to client
-                toClient.writeObject(portCount++);
-                toClient.close();
-            }
-            catch(SocketException SE) {
-                System.out.println("TransactionManagerWorker: Socket open object out streamexception.");
-            }
-            catch(IOException IOE) {
-                System.out.println("TransactionManagerWorker: IO exception.");
-            }
+            message = receivedMessage;
+            this.client = client;
         }
 
         public void run() {
             while( true ) {
-                // need functionality to handle incoming messages from client thread (ObjectInputStream)
-                // get message from client
-                try {
-                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
-                    message = (int) fromClient.readObject();
-                    fromClient.close();
-                }
-                catch(IOException IOE) {
-                    System.out.println("TransactionManagerWorker: IO exception.");
-                }
-                catch (ClassNotFoundException CNFE) {
-                    System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
-                }
-                
                 switch (message) {
-                    case 0: //open transaction
+                    case 0: //open transaction, should always be first message received
                         transaction = new Transaction(idCounter);
                         runningTransactions.add(transaction);
                         System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
@@ -119,14 +92,21 @@ public class TransactionManager{
 
                     case 1: // close transaction
                         // enter validation phase
-                        if(validateTransaction()) {
-                            // commit transaction
-                            committedTransactions.put(transaction.getID(), transaction);
+                        try{
+                            if(validateTransaction()) {
+                                // commit transaction
+                                writeTransaction(transaction);
+                                committedTransactions.put(transaction.getID(), transaction);
+                                client.close();
+                            }
+                            else {
+                                // add transaction to aborted transaction list
+                                abortedTransactions.add(transaction);
+                                // send abort message to client?
+                            }
                         }
-                        else {
-                            // add transaction to aborted transaction list
-                            abortedTransactions.add(transaction);
-                            // send abort message to client?
+                        catch(IOException IOE) {
+                            System.out.println("TransactionManagerWorker: IO exception.");
                         }
                         break;
 
@@ -173,11 +153,24 @@ public class TransactionManager{
                         catch(IOException IOE) {
                             System.out.println("TransactionManagerWorker: IO exception in write attempt.");
                         }
-                        TransactionServer.accountManager.write(nextAccount, balance );
+                        transaction.write(nextAccount, balance );
                         break;
 
                     default: // erroneous client message?
                         break;
+                }
+                // Wait for incoming messages from client thread (ObjectInputStream)
+                // get message from client
+                try {
+                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
+                    message = (int) fromClient.readObject();
+                    fromClient.close();
+                }
+                catch(IOException IOE) {
+                    System.out.println("TransactionManagerWorker: IO exception.");
+                }
+                catch (ClassNotFoundException CNFE) {
+                    System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
                 }
             }
         }
