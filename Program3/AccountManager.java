@@ -1,31 +1,17 @@
 public class AccountManager {
 
-    ArrayList<Account> accountList = new ArrayList<Account>();
+    ArrayList<Integer> accountList = new ArrayList<>();
 
-    public void generateAccount( int accountNum ) {
-        Account account = new Account();
-        account.setAccountNum( accountNum );
-        accountList.add( account );
+    public void generateAccount(int startingBalance) {
+        accountList.add(startingBalance);
     }
 
-    public Account findAccount( int accountNum ) {
-        Account foundAccount = null;
-        for ( int curAcc = 0; curAcc < accountList.size(); curAcc++ ) {
-            if ( accountList[curAcc].getAccountNum() == accountNum ) {
-                foundAccount = accountList[curAcc];
-            }
-        }
-        return foundAccount;
+    public int read( Integer accountNumber ) {
+        return accountList.get(accountNumber);
     }
 
-    public Account read( int accountNum ) {
-        Account account = findAccount( accountNum );
-        return account;
-    }
-
-    public void write( int accountNum, int balChange ) {
-        Account account = findAccount( accountNum );
-        account.updateBalance( balChange ); // not sure how to validate this without knowing if transaction is a withdrawal or deposit
+    public void write( Integer accountNumber, int updateBalance ) {
+        accountList.set( accountNumber, accountList.get(accountNumber) + updateBalance );
     }
 }
 
