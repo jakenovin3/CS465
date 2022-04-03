@@ -10,22 +10,24 @@ public class TransactionServerProxy extends Thread {
     int accountBalance;
 
     Message transactionMessage = new Message();
-    Socket serverConnection = null;
+    Socket serverConnection;
     ObjectInputStream fromServer;
-    ObjectOutputStream toServer = null;
+    ObjectOutputStream toServer;
 
     public TransactionServerProxy(String serverIP, int serverPort) {
 
+        // Connecting to server and opening up the object streams
         try {
-            // Connecting to server and opening up the object streams
             serverConnection = new Socket(serverIP, serverPort);
             toServer = new ObjectOutputStream(serverConnection.getOutputStream());
             fromServer = new ObjectInputStream(serverConnection.getInputStream());
         }
-        catch(IOException IOE) {
+        catch (IOException IOE) {
 
         }
+        catch (NullPointerException NPE) {
 
+        }
     }
 
     public int openTransaction() {
@@ -35,6 +37,7 @@ public class TransactionServerProxy extends Thread {
                 // Gets message type and writes it to the server socket
                 int openMessage = transactionMessage.getOpenTrans();
                 toServer.writeObject(openMessage);
+                toServer.close();
             }
             catch(IOException IOE) {
                 System.out.println("TransactionServerProxy: Error sending Open message to Server");
@@ -49,6 +52,7 @@ public class TransactionServerProxy extends Thread {
             try{
                 int closeMessage = transactionMessage.getClosedTrans();
                 toServer.writeObject(closeMessage);
+                toServer.close();
             }
             catch(IOException IOE) {
                 System.out.println("TransactionServerProxy: Error sending Close message to Server");
@@ -65,6 +69,7 @@ public class TransactionServerProxy extends Thread {
 
                 toServer = new ObjectOutputStream(serverConnection.getOutputStream());
                 toServer.writeObject(readMessage);
+                toServer.close();
             }
             catch(IOException IOE) {
                 System.out.println("TransactionServerProxy: Error sending message to Server");

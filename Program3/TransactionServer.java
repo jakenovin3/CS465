@@ -1,15 +1,33 @@
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.*;
+import java.util.Properties;
 
 public class TransactionServer {
+
+    String serverIP;
+    int serverPort;
+    int numAccounts;
+    int accountBalance;
+    int numTransactions;
+
     public static TransactionManager transactionManager = new TransactionManager();
     public static AccountManager accountManager = new AccountManager();
+
+    public TransactionServer(String ip, int port) {
+        serverIP = ip;
+        serverPort = port;
+    }
+
     public void run() {
         while( true ) {
             try {
-                ServerSocket serverSocket = new ServerSocket(0);
+                ServerSocket serverSocket = new ServerSocket(serverPort);
                 Socket proxyConnection;
+                System.out.println("Before accept");
                 proxyConnection = serverSocket.accept();
+                System.out.println("accepted");
                 transactionManager.runTransaction(proxyConnection);
             }
             catch( SocketException SE){
@@ -20,6 +38,27 @@ public class TransactionServer {
             }
         }
         
+    }
+
+    public static void main(String[] args) {
+
+        String serverIP;
+        int serverPort;
+
+        // Obtain configuration information and display
+        try(InputStream input = new FileInputStream("Program3/Server.properties")){
+            Properties prop = new Properties();
+            prop.load(input);
+
+            serverIP = prop.getProperty("SERVER_IP");
+            serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+
+            TransactionServer transactionServer = new TransactionServer(serverIP, serverPort);
+            System.out.println("Transaction Server running...");
+            transactionServer.run();
+        }
+        catch(IOException IOE) {}
+
     }
 }
 
