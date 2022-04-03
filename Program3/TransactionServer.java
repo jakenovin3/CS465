@@ -1,29 +1,25 @@
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.*;
 
 public class TransactionServer {
-    TransactionManager transactionManager = new TransactionManager();
-
+    public static TransactionManager transactionManager = new TransactionManager();
+    public static AccountManager accountManager = new AccountManager();
     public void run() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(55555);
-            Socket proxyConnection;
-
-            while( true ) {
+        while( true ) {
+            try {
+                ServerSocket serverSocket = new ServerSocket(0);
+                Socket proxyConnection;
                 proxyConnection = serverSocket.accept();
-                ObjectInputStream fromClient = new ObjectInputStream(proxyConnection.getInputStream());
-                int receivedMessage = (int) fromClient.readObject();
-
-                transactionManager.runTransaction(receivedMessage);
+                transactionManager.runTransaction(proxyConnection);
+            }
+            catch( SocketException SE){
+                System.out.println("TransactionServer: Socket open exception, socket closed.");
+            }
+            catch (IOException IOE){
+                System.out.println("TransactionServer: IOE server loop exception.");
             }
         }
-        catch (IOException IOE){
-            System.out.println("TransactionServer: IOE");
-        }
-        catch (ClassNotFoundException CNFE){
-            System.out.println("TransactionServer: CNFE");
-        }
+        
     }
 }
 
