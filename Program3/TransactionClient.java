@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class TransactionClient extends Thread{
+public class TransactionClient extends Thread {
 
     String serverIP;
     int serverPort;
@@ -23,9 +23,9 @@ public class TransactionClient extends Thread{
             // Obtaining server details
             serverIP = prop.getProperty("SERVER_IP");
             serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numTransactions = Integer.parseInt(prop.getProperty("NUM_TRANSACTIONS"));
             numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
             accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
-            numTransactions = Integer.parseInt(prop.getProperty("NUM_TRANSACTIONS"));
         }
         catch(IOException IOE) {}
     }
@@ -105,6 +105,7 @@ public class TransactionClient extends Thread{
         int serverPort;
         int numAccounts;
         int accountBalance;
+        int numTransactions;
 
         // Obtain configuration information and display
         try(InputStream input = new FileInputStream("Program3/Server.properties")){
@@ -113,6 +114,7 @@ public class TransactionClient extends Thread{
 
             serverIP = prop.getProperty("SERVER_IP");
             serverPort = Integer.parseInt(prop.getProperty("SERVER_PORT"));
+            numTransactions = Integer.parseInt(prop.getProperty("NUM_TRANSACTIONS"));
             numAccounts = Integer.parseInt(prop.getProperty("NUM_ACCOUNTS"));
             accountBalance = Integer.parseInt(prop.getProperty("ACCOUNT_BALANCE"));
 
@@ -120,6 +122,7 @@ public class TransactionClient extends Thread{
             System.out.println("TRANSACTION SERVER CONFIGURATION\n");
             System.out.println("Server IP: " + serverIP);
             System.out.println("Server Port: " + serverPort);
+            System.out.println("Number of Transactions: " + numTransactions);
             System.out.println("Number of Accounts: " + numAccounts);
             System.out.println("Account Balance: " + accountBalance);
             System.out.println("================================");
