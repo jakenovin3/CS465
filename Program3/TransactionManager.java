@@ -96,22 +96,8 @@ public class TransactionManager{
 
         public void run() {
             while( true ) {
-                // need functionality to handle incoming messages from client thread (ObjectInputStream)
-                // get message from client
-                try {
-                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
-                    message = (int) fromClient.readObject();
-                    fromClient.close();
-                }
-                catch(IOException IOE) {
-                    System.out.println("TransactionManagerWorker: IO exception.");
-                }
-                catch (ClassNotFoundException CNFE) {
-                    System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
-                }
-                
                 switch (message) {
-                    case 0: //open transaction
+                    case 0: //open transaction, should always be first message received
                         transaction = new Transaction(idCounter);
                         runningTransactions.add(transaction);
                         System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
@@ -119,14 +105,20 @@ public class TransactionManager{
 
                     case 1: // close transaction
                         // enter validation phase
-                        if(validateTransaction()) {
-                            // commit transaction
-                            committedTransactions.put(transaction.getID(), transaction);
+                        try{
+                            if(validateTransaction()) {
+                                // commit transaction
+                                committedTransactions.put(transaction.getID(), transaction);
+                                client.close();
+                            }
+                            else {
+                                // add transaction to aborted transaction list
+                                abortedTransactions.add(transaction);
+                                // send abort message to client?
+                            }
                         }
-                        else {
-                            // add transaction to aborted transaction list
-                            abortedTransactions.add(transaction);
-                            // send abort message to client?
+                        catch(IOException IOE) {
+                            System.out.println("TransactionManagerWorker: IO exception.");
                         }
                         break;
 
@@ -178,6 +170,19 @@ public class TransactionManager{
 
                     default: // erroneous client message?
                         break;
+                }
+                // Wait for incoming messages from client thread (ObjectInputStream)
+                // get message from client
+                try {
+                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
+                    message = (int) fromClient.readObject();
+                    fromClient.close();
+                }
+                catch(IOException IOE) {
+                    System.out.println("TransactionManagerWorker: IO exception.");
+                }
+                catch (ClassNotFoundException CNFE) {
+                    System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
                 }
             }
         }
