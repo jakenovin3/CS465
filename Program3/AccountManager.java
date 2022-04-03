@@ -1,5 +1,18 @@
 public class AccountManager {
 
+    ArrayList<Integer> accountList = new ArrayList<>();
+
+    public void generateAccount(int startingBalance) {
+        accountList.add(startingBalance);
+    }
+
+    public int read( Integer accountNumber ) {
+        return accountList.get(accountNumber);
+    }
+
+    public void write( Integer accountNumber, int updateBalance ) {
+        accountList.set( accountNumber, accountList.get(accountNumber) + updateBalance );
+    }
 }
 
 /*
