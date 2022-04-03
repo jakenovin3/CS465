@@ -3,8 +3,12 @@ public class Message {
     private int OPEN_TRANSACTION = 0;
     private int CLOSE_TRANSACTION = 1;
     private int TRANSACTION_COMMITTED = 2;
-    private int READ_REQUEST = 3;
-    private int WRITE_REQUEST = 4;
+    private int TRANSACTION_ABORTED = 3;
+    private int READ_REQUEST = 4;
+    private int WRITE_REQUEST = 5;
+    private int READ_REQUEST_RESPONSE = 6;
+    private int WRITE_REQUEST_RESPONSE = 7;
+    private int SHUTDOWN = 8;
 
     public int getOpenTrans() {
         return OPEN_TRANSACTION;

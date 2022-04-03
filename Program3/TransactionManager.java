@@ -1,11 +1,20 @@
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.SocketException;
+import java.text.Normalizer.Form;
+import java.io.IOException;
 
 public class TransactionManager{
-    // key = transaction ID
-    HashMap<Integer, Transaction> transactionMap = new HashMap<>();
-    // key = transaction number?
-    HashMap<Integer, Transaction> readyToValidate = new HashMap<>();
+    HashMap<Integer, Transaction> committedTransactions = new HashMap<>();
+    private ArrayList<Transaction> abortedTransactions = new ArrayList<>();
+    private ArrayList<Transaction> runningTransactions = new ArrayList<>();
     private int idCounter = 0;
+    private int numCounter = 0;
+    private int portCount = 1;
     /*
         Identifies the account the request is for (via AccountManager methods).
         Gets information based on incoming transaction (how much money can be
@@ -13,84 +22,139 @@ public class TransactionManager{
     */
 
     /*
-    Method: 1) Receives message type ID
+    Method: 1) Receives socket from client
             2) Creates worker thread
             3) Starts worker thread to handle transaction
     */
-    public void runTransaction() {
-        TransactionManagerWorker transactionWorker = new TransactionManagerWorker();
-        transactionWorker.start();
+    public void runTransaction( Socket client) {
+        try {
+            ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
+            int receivedMessage = (int) fromClient.readObject();
+            TransactionManagerWorker transactionWorker = new TransactionManagerWorker( receivedMessage, client ); // receive client port
+            transactionWorker.start();
+        }
+        catch (IOException IOE){
+            System.out.println("TransactionManager: IOE");
+        }
+        catch (ClassNotFoundException CNFE) {
+            System.out.println("TransactionManager: CNFE");
+        }
     }
 
+    public ArrayList<Transaction> getAbortedTransactions() {
+        return new ArrayList<>();
+    }
+
+    /* For each transaction in transactionMap
+    *  current transaction > comparedTo ||
+    *  if balance is negative, return false?
+    */
+    public boolean validateTransaction() {
+        
+        return true;
+    }
+    
+    /* Write write set of transaction to account
+    */
+    public void writeTransaction( Transaction transaction ) {
+        HashMap<Integer, Integer> writeSet = transaction.getWriteSet();
+        int balance;
+        int accountNum;
+
+        for ( Map.Entry<Integer,Integer> entry : writeSet.entrySet()) {
+            accountNum = entry.getKey();
+            balance = entry.getValue();
+            TransactionServer.accountManager.write(accountNum, balance);
+            System.out.println("Transaction " + transaction.getID() + ": writing transaction.");
+        }
+    }
+
+
+    // ================================================= Inner Worker Class =======================================================
     public class TransactionManagerWorker extends Thread
     {
-        private int message = -1;
-        private int update = 0;
-
-        public TransactionManagerWorker() {
-
+        private int message = -1; // message type
+        private int balance = 0;   // current balance change?
+        private Socket client;
+        Transaction transaction = null;
+        public TransactionManagerWorker( int receivedMessage, Socket client ) {
+            try{
+                message = receivedMessage;
+                this.client = client;
+                ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
+                // set port to counter, increment for next thread, send port to client
+                toClient.writeObject(portCount++);
+                toClient.close();
+            }
+            catch(SocketException SE) {
+                System.out.println("TransactionManagerWorker: Socket open object out streamexception.");
+            }
+            catch(IOException IOE) {
+                System.out.println("TransactionManagerWorker: IO exception.");
+            }
         }
-
-        // Function used to get updates from proxy
-        public void receiveMessage( int newMessage, int content )
-        {
-            message = newMessage;
-            update = content;
-        }
-
+        
         // If the validated transaction does not exist or a transaction to be validated
         // is ahead of this transaction, then return false otherwise is valid
         public boolean validate(Transaction nextTransaction)
         {
-            if (nextTransaction == null
-                || readyToValidate.get(nextTransaction.getNumber()-1) != null)
-            {
-                return false;
-            }
             return true;
         }
 
         public void run() {
-            int lastValidated = 0;
+            int nextAccount = 0;
             while( true ) {
+                // need functionality to handle incoming messages from client thread (ObjectInputStream)
+                // get message from client
+                try {
+                    ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
+                    message = (int) fromClient.readObject();
+                }
+                catch(IOException IOE) {
+                    System.out.println("TransactionManagerWorker: IO exception.");
+                }
+                catch (ClassNotFoundException CNFE) {
+                    System.out.println("TransactionManagerWorker: CNFE class not found.");
+                }
+                
                 switch (message) {
                     case 0: //open transaction
-                        Transaction transaction = new Transaction(idCounter);
-                        transactionMap.putIfAbsent(idCounter++, transaction);
-                        System.out.println("Transaction ID: " + Integer.toString(idCounter) + " opened");
+                        transaction = new Transaction(idCounter);
+                        runningTransactions.add(transaction);
+                        System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
                         break;
 
                     case 1: // close transaction
-                        // Determines the Transaction that needs to be closed
-                        if(validate(readyToValidate.get(lastValidated))) // does it make sense to 
-                        {
-                            transactionMap.remove(lastValidated);
+                        // enter validation phase
+                        if(validateTransaction()) {
+                            // commit transaction
+                            committedTransactions.put(transaction.getID(), transaction);
                         }
-                        else
-                        {
-                            // undo and abort
+                        else {
+                            // add transaction to aborted transaction list
+                            abortedTransactions.add(transaction);
+                            // send abort message to client?
                         }
                         break;
 
-                    case 2: // transaction committed
-                        break;
-
-                    case 3: // transaction read
+                    case 4: // transaction read
                         // call account read function
+                        TransactionServer.accountManager.read(nextAccount);
+                        transaction.read(nextAccount);
                         // send result back to proxy
                         break;
 
-                    case 4: // transaction write                        
-                        AccountManager.write(lastValidated, update );
+                    case 5: // transaction write                        
+                        TransactionServer.accountManager.write(nextAccount, balance );
                         // send result back to proxy
                         break;
 
-                    default: // erroneous entry message?
+                    default: // erroneous client message?
                         break;
                 }
             }
         }
-    } // End of Inner Class
+    } // End of Inner Class ======================================================================
 }
 
 /*
