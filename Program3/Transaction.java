@@ -26,7 +26,6 @@ public class Transaction {
     HashMap<Integer, Integer> writeSet = new HashMap<>();
     private int transID;
     private int transNum;
-    private int lastcommit;
 
     public Transaction(int id) {
         transID = id;

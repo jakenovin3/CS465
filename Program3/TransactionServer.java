@@ -14,11 +14,13 @@ public class TransactionServer {
 
     public static TransactionManager transactionManager = new TransactionManager();
     public static AccountManager accountManager = new AccountManager();
+    public static Message messages = new Message();
 
     public TransactionServer(String ip, int port) {
         serverIP = ip;
         serverPort = port;
     }
+
 
     public void run() {
         while( true ) {

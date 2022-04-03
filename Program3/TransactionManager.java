@@ -43,12 +43,19 @@ public class TransactionManager{
         return abortedTransactions;
     }
 
-    /* For each transaction in transactionMap
-    *  current transaction > comparedTo ||
-    *  if balance is negative, return false?
+    /* 
+    *  
     */
-    public boolean validateTransaction() {
-        
+    public boolean validateTransaction(Transaction transaction) {
+        // compare the read to write
+        for( Integer readEntry : transaction.getReadSet() ) {
+            for( Transaction currTransaction : runningTransactions ) {
+                if( transaction.getNumber() < currTransaction.getNumber()
+                    && currTransaction.getWriteSet().containsKey(readEntry) ) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
     
@@ -82,10 +89,11 @@ public class TransactionManager{
         }
 
         public void run() {
-            while( true ) {
+            boolean continueRun = true;
+            while( continueRun ) {
                 switch (message) {
                     case 0: //open transaction, should always be first message received
-                        transaction = new Transaction(idCounter);
+                        transaction = new Transaction(idCounter++);
                         runningTransactions.add(transaction);
                         System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
                         break;
@@ -93,17 +101,23 @@ public class TransactionManager{
                     case 1: // close transaction
                         // enter validation phase
                         try{
-                            if(validateTransaction()) {
+                            ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
+                            transaction.setNumber(numCounter++);
+                            if(validateTransaction(transaction)) {
                                 // commit transaction
                                 writeTransaction(transaction);
                                 committedTransactions.put(transaction.getID(), transaction);
-                                client.close();
+                                runningTransactions.remove(transaction);
+                                toClient.writeObject(TransactionServer.messages.getCommitTrans());
                             }
                             else {
                                 // add transaction to aborted transaction list
                                 abortedTransactions.add(transaction);
-                                // send abort message to client?
+                                toClient.writeObject(TransactionServer.messages.getAbortTrans());
                             }
+                            continueRun = false;
+                            client.close(); // close socket to client
+                            toClient.close();
                         }
                         catch(IOException IOE) {
                             System.out.println("TransactionManagerWorker: IO exception.");
@@ -113,7 +127,7 @@ public class TransactionManager{
                     case 4: // transaction read
                         try {
                             ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
-                            toClient.writeObject(6); // read response to client
+                            toClient.writeObject(TransactionServer.messages.getReadResp()); // read response to client
                             
                             ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
                             nextAccount = (int) fromClient.readObject();
@@ -137,7 +151,7 @@ public class TransactionManager{
                         // accept write request, get balance from client
                         try {
                             ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
-                            toClient.writeObject(7); // write response to client
+                            toClient.writeObject(TransactionServer.messages.getWriteResp()); // write response to client
                             toClient.close();
                             ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
                             nextAccount = (int) fromClient.readObject();
