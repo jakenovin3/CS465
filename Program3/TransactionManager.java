@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.cert.TrustAnchor;
 import java.io.IOException;
 
 public class TransactionManager{
@@ -44,16 +43,15 @@ public class TransactionManager{
         return abortedTransactions;
     }
 
-    /* For each transaction in transactionMap
-    *  current transaction > comparedTo ||
-    *  if balance is negative, return false?
+    /* 
+    *  
     */
     public boolean validateTransaction(Transaction transaction) {
         // compare the read to write
         for( Integer readEntry : transaction.getReadSet() ) {
             for( Transaction currTransaction : runningTransactions ) {
-                if( transaction.getNumber() == currTransaction.getNumber() - 1
-                    || currTransaction.getWriteSet().containsKey(readEntry) ) {
+                if( transaction.getNumber() < currTransaction.getNumber()
+                    && currTransaction.getWriteSet().containsKey(readEntry) ) {
                     return false;
                 }
             }
@@ -95,8 +93,7 @@ public class TransactionManager{
             while( continueRun ) {
                 switch (message) {
                     case 0: //open transaction, should always be first message received
-                        transaction = new Transaction(idCounter);
-                        transaction.setNumber(numCounter++);
+                        transaction = new Transaction(idCounter++);
                         runningTransactions.add(transaction);
                         System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
                         break;
@@ -105,6 +102,7 @@ public class TransactionManager{
                         // enter validation phase
                         try{
                             ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
+                            transaction.setNumber(numCounter++);
                             if(validateTransaction(transaction)) {
                                 // commit transaction
                                 writeTransaction(transaction);
