@@ -5,11 +5,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.text.Normalizer.Form;
 import java.io.IOException;
 
 public class TransactionManager{
-    HashMap<Integer, Transaction> committedTransactions = new HashMap<>();
+    private HashMap<Integer, Transaction> committedTransactions = new HashMap<>();
     private ArrayList<Transaction> abortedTransactions = new ArrayList<>();
     private ArrayList<Transaction> runningTransactions = new ArrayList<>();
     private int idCounter = 0;
@@ -42,7 +41,7 @@ public class TransactionManager{
     }
 
     public ArrayList<Transaction> getAbortedTransactions() {
-        return new ArrayList<>();
+        return abortedTransactions;
     }
 
     /* For each transaction in transactionMap
@@ -93,13 +92,6 @@ public class TransactionManager{
             catch(IOException IOE) {
                 System.out.println("TransactionManagerWorker: IO exception.");
             }
-        }
-        
-        // If the validated transaction does not exist or a transaction to be validated
-        // is ahead of this transaction, then return false otherwise is valid
-        public boolean validate(Transaction nextTransaction)
-        {
-            return true;
         }
 
         public void run() {
