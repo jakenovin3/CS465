@@ -12,11 +12,23 @@ public class TransactionServer {
     int accountBalance;
     int numTransactions;
 
-    public static TransactionManager transactionManager = new TransactionManager();
-    public static AccountManager accountManager = new AccountManager();
+    public static TransactionManager transactionManager;
+    public static AccountManager accountManager;
     public static Message messages = new Message();
+    ServerSocket serverSocket;
 
     public TransactionServer(String ip, int port) {
+        transactionManager = new TransactionManager();
+        System.out.println("[TransactionServer.TransactionServer] TransactionManager created.");
+        accountManager = new AccountManager();
+        System.out.println("[TransactionServer.TransactionServer] AccountManager created.");
+        try {
+        serverSocket = new ServerSocket(port);
+        }
+        catch (IOException IOE) {
+            System.out.println("TransactionServer: IOE server loop exception.");
+        }
+        System.out.println("[TransactionServer.TransactionServer] ServerSocket created.");
         serverIP = ip;
         serverPort = port;
     }
@@ -25,16 +37,13 @@ public class TransactionServer {
     public void run() {
         while( true ) {
             try {
-                ServerSocket serverSocket = new ServerSocket(serverPort);
-                Socket proxyConnection;
-                proxyConnection = serverSocket.accept();
-                transactionManager.runTransaction(proxyConnection);
+                transactionManager.runTransaction(serverSocket.accept());
             }
             catch( SocketException SE){
-                System.out.println("TransactionServer: Socket open exception, socket closed.");
+                // System.out.println("TransactionServer: Socket open exception, socket closed.");
             }
             catch (IOException IOE){
-                System.out.println("TransactionServer: IOE server loop exception.");
+                // System.out.println("TransactionServer: IOE server loop exception.");
             }
         }
         
