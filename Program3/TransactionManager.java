@@ -13,6 +13,7 @@ public class TransactionManager{
     private ArrayList<Transaction> runningTransactions = new ArrayList<>();
     private int idCounter = 0;
     private int numCounter = 0;
+    private int runningCount = 1;
     /*
         Identifies the account the request is for (via AccountManager methods).
         Gets information based on incoming transaction (how much money can be
@@ -80,7 +81,7 @@ public class TransactionManager{
     {
         private int message = -1; // message type
         int nextAccount = 0;
-        private int balance = 0;   // current balance change?
+        private int balanceBuffer = 0;   // current balance change?
         private Socket client;
         Transaction transaction = null;
         public TransactionManagerWorker( int receivedMessage, Socket client ) {
@@ -95,7 +96,8 @@ public class TransactionManager{
                     case 0: //open transaction, should always be first message received
                         transaction = new Transaction(idCounter++);
                         runningTransactions.add(transaction);
-                        System.out.println("Transaction ID: " + Integer.toString(transaction.getID()) + " opened");
+                        System.out.println( runningCount++ + " Transaction #" + Integer.toString(transaction.getID())
+                        + " [TransactionManagerWorker.run] OPEN_TRANSACTION #" + Integer.toString(transaction.getID()));
                         break;
 
                     case 1: // close transaction
@@ -131,19 +133,23 @@ public class TransactionManager{
                             
                             ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
                             nextAccount = (int) fromClient.readObject();
-                            toClient.writeObject(TransactionServer.accountManager.read(nextAccount));
-
+                            System.out.println( runningCount++ + " Transaction #" + Integer.toString(transaction.getID())
+                            + " [TransactionManagerWorker.run] READ_REQUEST >>>>>>>>>>>>>>>>>>>> Account #" + nextAccount );
+                            balanceBuffer = TransactionServer.accountManager.read(nextAccount);
+                            toClient.writeObject( balanceBuffer );
+                            System.out.println( runningCount++ + " Transaction #" + Integer.toString(transaction.getID())
+                            + " [TransactionManagerWorker.run] READ_REQUEST <<<<<<<<<<<<<<<<<<<< Account #" + nextAccount + "Balance: $" + balanceBuffer );
                             toClient.close();
                             fromClient.close();
                         }
                         catch(SocketException SE) {
-                            System.out.println("TransactionManagerWorker: Socket object in/out stream exception in write attempt.");
+                            // System.out.println("TransactionManagerWorker: Socket object in/out stream exception in write attempt.");
                         }
                         catch (ClassNotFoundException CNFE) {
-                            System.out.println("TransactionManagerWorker: CNFE class not found in write attempt.");
+                            // System.out.println("TransactionManagerWorker: CNFE class not found in write attempt.");
                         }
                         catch(IOException IOE) {
-                            System.out.println("TransactionManagerWorker: IO exception in write attempt.");
+                            // System.out.println("TransactionManagerWorker: IO exception in write attempt.");
                         }
                         break;
 
@@ -153,21 +159,24 @@ public class TransactionManager{
                             ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
                             toClient.writeObject(TransactionServer.messages.getWriteResp()); // write response to client
                             toClient.close();
+                            
                             ObjectInputStream fromClient = new ObjectInputStream(client.getInputStream());
                             nextAccount = (int) fromClient.readObject();
-                            balance = (int) fromClient.readObject();
+                            balanceBuffer = (int) fromClient.readObject();
+                            System.out.println( runningCount++ + " Transaction #" + Integer.toString(transaction.getID())
+                            + " [TransactionManagerWorker.run] WRITE_REQUEST >>>>>>>>>>>>>>>>>>>> Account #" + nextAccount );
                             fromClient.close();
                         }
                         catch(SocketException SE) {
-                            System.out.println("TransactionManagerWorker: Socket object in/out stream exception in write attempt.");
+                            // System.out.println("TransactionManagerWorker: Socket object in/out stream exception in write attempt.");
                         }
                         catch (ClassNotFoundException CNFE) {
-                            System.out.println("TransactionManagerWorker: CNFE class not found in write attempt.");
+                            // System.out.println("TransactionManagerWorker: CNFE class not found in write attempt.");
                         }
                         catch(IOException IOE) {
-                            System.out.println("TransactionManagerWorker: IO exception in write attempt.");
+                            // System.out.println("TransactionManagerWorker: IO exception in write attempt.");
                         }
-                        transaction.write(nextAccount, balance );
+                        transaction.write(nextAccount, balanceBuffer );
                         break;
 
                     default: // erroneous client message?
@@ -181,10 +190,10 @@ public class TransactionManager{
                     fromClient.close();
                 }
                 catch(IOException IOE) {
-                    System.out.println("TransactionManagerWorker: IO exception.");
+                    // System.out.println("TransactionManagerWorker: IO exception.");
                 }
                 catch (ClassNotFoundException CNFE) {
-                    System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
+                    // System.out.println("TransactionManagerWorker: CNFE class not found in client message request check.");
                 }
             }
         }
