@@ -22,12 +22,28 @@ public class Message {
         return TRANSACTION_COMMITTED;
     }
 
+    public int getAbortTrans() {
+        return TRANSACTION_ABORTED;
+    }
+
     public int getReadReq() {
         return READ_REQUEST;
     }
 
     public int getWriteReq() {
         return WRITE_REQUEST;
+    }
+
+    public int getReadResp() {
+        return READ_REQUEST_RESPONSE;
+    }
+
+    public int getWriteResp() {
+        return WRITE_REQUEST_RESPONSE;
+    }
+
+    public int getShutdown() {
+        return SHUTDOWN;
     }
 }
 
