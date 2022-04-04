@@ -64,7 +64,7 @@ public class TransactionClient extends Thread {
             int senderAccountID, receiverAccountID;
             int amountToTransfer;
             int accountBalance;
-            int maxTransferAmount = 100; // Change to set the limit on money sent
+            int maxTransferAmount = 50; // Change to set the limit on money sent
             int transactionStatus;
 
             // Setting up which accounts will be sending and receiving money
@@ -83,27 +83,27 @@ public class TransactionClient extends Thread {
 
             transID = transactionProxy.openTransaction();
             if(transID == 1) {
-                System.out.println("Transaction #" + transID + " initialized...");
-                System.out.println("------------------------------");
-                System.out.println("Account #" + senderAccountID + " -----> Account #" + receiverAccountID + " ($" + amountToTransfer + ")");
+                System.out.println("Transaction #" + transID + " started, transfer $" + amountToTransfer + ": " + senderAccountID + "->" + receiverAccountID);
+            }
+            else {
+                System.out.println("TransactionClient: Failed openTransaction()");
             }
 
             // This is the withdrawal of money from the sender's account
             accountBalance = transactionProxy.read(senderAccountID);
             transactionProxy.write(senderAccountID, accountBalance - amountToTransfer);
-            System.out.println("Transaction #" + transID + " withdrawal request from Account #" + senderAccountID + " (-$" + amountToTransfer + ")");
 
             // This is the deposit of money into the receiver's account
             accountBalance = transactionProxy.read(receiverAccountID);
             transactionProxy.write(receiverAccountID, accountBalance + amountToTransfer);
-            System.out.println("Transaction #" + transID + " deposit request from Account #" + receiverAccountID + " (+$" + amountToTransfer + ")");
 
+            // Closes transaction and tells if it was a success or not
             transactionStatus = transactionProxy.closeTransaction();
             if(transactionStatus == 1) {
-                System.out.println("Transaction #" + transID + " COMMITTED\n");
+                System.out.println("Transaction #" + transID + " COMMITTED");
             }
             else {
-                System.out.println("Transaction #" + transID + " ABORTED\n");
+                System.out.println("Transaction #" + transID + " ABORTED");
             }
 
         }
