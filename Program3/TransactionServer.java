@@ -25,9 +25,7 @@ public class TransactionServer {
             try {
                 ServerSocket serverSocket = new ServerSocket(serverPort);
                 Socket proxyConnection;
-                System.out.println("Before accept");
                 proxyConnection = serverSocket.accept();
-                System.out.println("accepted");
                 transactionManager.runTransaction(proxyConnection);
             }
             catch( SocketException SE){
