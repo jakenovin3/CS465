@@ -12,7 +12,7 @@ public class TransactionClient extends Thread {
 
     ArrayList<Transaction> transactionList = new ArrayList<>();
 
-    // Concstructor obatining server and config information
+    // Constructor obtaining server and config information
     public TransactionClient() {
 
         try(InputStream input = new FileInputStream("Program3/Server.properties")){
@@ -34,23 +34,35 @@ public class TransactionClient extends Thread {
 
         Thread newTransactionThread;
         int transID;
-        for(transID = 0; transID < numTransactions; transID++) {
+        for(transID = 1; transID <= numTransactions; transID++) {
             Transaction newTransaction = new Transaction(transID);
             transactionList.add(newTransaction);
 
-            newTransactionThread = new TransactionThread();
+            newTransactionThread = new TransactionThread(transID);
             newTransactionThread.start();
+
+            // Allows the individual Thread's prints to not overlap
+            try {
+                Thread.sleep((int) Math.floor(Math.random() * 3250));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     // These are the actual accounts created and transactions that are going to occur
     public class TransactionThread extends Thread {
 
+        int transID;
+
+        public TransactionThread(int id) {
+            this.transID = id;
+        }
+
         public void run() {
 
             int senderAccountID, receiverAccountID;
             int amountToTransfer;
-            int transID;
             int accountBalance;
             int maxTransferAmount = 100; // Change to set the limit on money sent
             int transactionStatus;
@@ -88,10 +100,10 @@ public class TransactionClient extends Thread {
 
             transactionStatus = transactionProxy.closeTransaction();
             if(transactionStatus == 1) {
-                System.out.println("Transaction #" + transID + " COMMITTED");
+                System.out.println("Transaction #" + transID + " COMMITTED\n");
             }
             else {
-                System.out.println("Transaction #" + transID + " ABORTED");
+                System.out.println("Transaction #" + transID + " ABORTED\n");
             }
 
         }
