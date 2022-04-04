@@ -68,32 +68,30 @@ public class TransactionClient extends Thread {
             }
 
             TransactionServerProxy transactionProxy = new TransactionServerProxy(serverIP, serverPort);
+
             transID = transactionProxy.openTransaction();
             if(transID == 1) {
-                System.out.println("Transaction # " + transID + " initialized...");
-                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+                System.out.println("Transaction #" + transID + " initialized...");
+                System.out.println("------------------------------");
+                System.out.println("Account #" + senderAccountID + " -----> Account #" + receiverAccountID + " ($" + amountToTransfer + ")");
             }
 
             // This is the withdrawal of money from the sender's account
             accountBalance = transactionProxy.read(senderAccountID);
             transactionProxy.write(senderAccountID, accountBalance - amountToTransfer);
-            System.out.println("Transaction #: " + transID + " withdrawal request...");
-            System.out.println("--- Withdraw Amount:   - $" + amountToTransfer);
+            System.out.println("Transaction #" + transID + " withdrawal request from Account #" + senderAccountID + " (-$" + amountToTransfer + ")");
 
             // This is the deposit of money into the receiver's account
             accountBalance = transactionProxy.read(receiverAccountID);
             transactionProxy.write(receiverAccountID, accountBalance + amountToTransfer);
-            System.out.println("Transaction #: " + transID + " deposit request...");
-            System.out.println("--- Deposit Amount:   + $" + amountToTransfer);
+            System.out.println("Transaction #" + transID + " deposit request from Account #" + receiverAccountID + " (+$" + amountToTransfer + ")");
 
             transactionStatus = transactionProxy.closeTransaction();
             if(transactionStatus == 1) {
-                System.out.println("Transaction # " + transID + " COMMITTED");
-                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+                System.out.println("Transaction #" + transID + " COMMITTED");
             }
             else {
-                System.out.println("Transaction # " + transID + " ABORTED");
-                System.out.println("--- Amount: " + amountToTransfer + ", Sending Account #: " + senderAccountID + ", Receiving Account #: " + receiverAccountID);
+                System.out.println("Transaction #" + transID + " ABORTED");
             }
 
         }
@@ -125,15 +123,13 @@ public class TransactionClient extends Thread {
             System.out.println("Number of Transactions: " + numTransactions);
             System.out.println("Number of Accounts: " + numAccounts);
             System.out.println("Account Balance: " + accountBalance);
-            System.out.println("================================");
+            System.out.println("================================\n");
         }
         catch(IOException IOE) {}
 
         TransactionClient client = new TransactionClient();
         client.start();
     }
-
-    // When this calls read()/write() on proxy server, does it randomly select the operation to do?
 
 }
 
