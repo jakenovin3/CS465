@@ -8,6 +8,7 @@ public class TransactionClient extends Thread {
     int numAccounts;
     int accountBalance;
     int numTransactions;
+    int transID;
 
     ArrayList<Transaction> transactionList = new ArrayList<>();
 
@@ -32,12 +33,11 @@ public class TransactionClient extends Thread {
     public void run() {
 
         Thread newTransactionThread;
-        int transID;
         for(transID = 1; transID <= numTransactions; transID++) {
             Transaction newTransaction = new Transaction(transID);
             transactionList.add(newTransaction);
 
-            newTransactionThread = new TransactionThread(transID);
+            newTransactionThread = new TransactionThread(newTransaction.getID());
             newTransactionThread.start();
         }
     }
@@ -71,7 +71,7 @@ public class TransactionClient extends Thread {
                 }
             }
 
-            // Allows the individual Thread's prints to not overlap
+            // Slows down the threads' execution
             try {
                 Thread.sleep((int) Math.floor(Math.random() * 3250));
             } catch (InterruptedException e) {
@@ -80,8 +80,8 @@ public class TransactionClient extends Thread {
 
             TransactionServerProxy transactionProxy = new TransactionServerProxy(serverIP, serverPort);
 
-            transID = transactionProxy.openTransaction();
-            if(transID == 1) {
+            transactionStatus = transactionProxy.openTransaction();
+            if(transactionStatus == 1) {
                 System.out.println("Transaction #" + transID + " started, transfer $" + amountToTransfer + ": " + senderAccountID + "->" + receiverAccountID);
             }
             else {
