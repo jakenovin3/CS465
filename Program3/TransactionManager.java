@@ -53,10 +53,16 @@ public class TransactionManager{
             for( Transaction currTransaction : runningTransactions ) {
                 if( transaction.getNumber() < currTransaction.getNumber()
                     && currTransaction.getWriteSet().containsKey(readEntry) ) {
+                    System.out.println( numCounter++ + " Transaction #" + Integer.toString(transaction.getID())
+                    + " [TransactionManager.validateTransaction] Transaction #" + Integer.toString(transaction.getID())
+                    + " failed: r/w conflict on account #" + readEntry.toString() + " with Transaction #" + Integer.toString(transaction.getID()));
                     return false;
                 }
             }
         }
+        System.out.println( numCounter++ + " Transaction #" + Integer.toString(transaction.getID())
+        + " [TransactionManager.validateTransaction] Transaction #" + Integer.toString(transaction.getID())
+        + " successfully validated");
         return true;
     }
     
@@ -105,6 +111,9 @@ public class TransactionManager{
                         try{
                             ObjectOutputStream toClient = new ObjectOutputStream(client.getOutputStream());
                             transaction.setNumber(numCounter++);
+                            System.out.println(runningCount++ + "Transaction #" + Integer.toString(transaction.getID())
+                            + " [TransactionManagerWorker.run] CLOSE_TRANSACTION #" + Integer.toString(transaction.getID())
+                            + " - COMMITTED");
                             if(validateTransaction(transaction)) {
                                 // commit transaction
                                 writeTransaction(transaction);
