@@ -39,13 +39,6 @@ public class TransactionClient extends Thread {
 
             newTransactionThread = new TransactionThread(transID);
             newTransactionThread.start();
-
-            // Allows the individual Thread's prints to not overlap
-            try {
-                Thread.sleep((int) Math.floor(Math.random() * 3250));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -76,6 +69,13 @@ public class TransactionClient extends Thread {
                 while(senderAccountID == receiverAccountID) {
                     receiverAccountID = (int) (Math.random() * 10);
                 }
+            }
+
+            // Allows the individual Thread's prints to not overlap
+            try {
+                Thread.sleep((int) Math.floor(Math.random() * 3250));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             TransactionServerProxy transactionProxy = new TransactionServerProxy(serverIP, serverPort);
